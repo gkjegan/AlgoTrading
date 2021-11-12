@@ -137,22 +137,4 @@ for key in data:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 db.close()

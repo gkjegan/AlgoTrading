@@ -66,28 +66,46 @@ def streamSnapshotData(req_num,contract):
                    regulatorySnapshot=False,
                    mktDataOptions=[])
 
+'''    
+def websocket_con(tickers):
+    global db
+    db = sqlite3.connect('/Users/jegankarunakaran/AlgoTrading/code/AlgoTrading/strategies/db/ema_rsi_camarilla.db')
+    c=db.cursor()
+    for ticker in tickers:
+        print(ticker)
+        c.execute("CREATE TABLE IF NOT EXISTS TICKER_{} (time datetime primary key, price real(15,5), volume integer)".format(ticker))
+        try:
+            db.commit()
+        except:
+           db.rollback()    
+    app.run()    
+'''
 
 def cancelMarketData(reqId):
     app.cancelMktData(reqId)
 
-
 def websocket_con():
     global db
-    db = sqlite3.connect('/Users/jegankarunakaran/AlgoTrading/code/AlgoTrading/strategies/db/ema_rsi_camarilla.db')           
+    db = sqlite3.connect('/Users/jegankarunakaran/AlgoTrading/code/AlgoTrading/strategies/db/ema_rsi_camarilla.db')       
     app.run()
-    
 
+
+event = threading.Event()  
 app = TradeApp()
 app.connect(host='127.0.0.1', port=7497, clientId=23) #port 4002 for ib gateway paper trading/7497 for TWS paper trading
-con_thread = threading.Thread(target=websocket_con, daemon=True)
+# starting a separate daemon thread to execute the websocket connection
+con_thread = threading.Thread(target=websocket_con)
 con_thread.start()
 time.sleep(1) # some latency added to ensure that the connection is established
+
+#con_thread = threading.Thread(target=websocket_con, args=(tickers,), daemon=True)
+#con_thread.start()
 
 for ticker in tickers:
     print(ticker)
     streamSnapshotData(tickers.index(ticker),usTechStk(ticker))
     
-time.sleep(10)
+time.sleep(5)
 #time.sleep(5) # some latency added to ensure that the contract details request has been processed
 for ticker in tickers:
     time.sleep(5)
@@ -99,5 +117,3 @@ try:
 except requests.RequestException as e:
     # Log ping failure here...
     print("Ping failed: %s" % e)
-time.sleep(30)
-app.disconnect()
