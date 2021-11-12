@@ -16,8 +16,7 @@ import numpy as np
 #tickers = ["FB"]
 tickers = ['MSFT', 'APPL', 'TSLA', 'FB', 'BRK.B', 'NVDA', 'JPM', 'V', 'JNJ', 'UNH', 'WMT', 'BAC', 'PG']
 
-
-
+'''
 def dataDataframe(symbols,TradeApp_obj):
     "returns extracted historical data in dataframe format"
     df_data = {}
@@ -25,7 +24,7 @@ def dataDataframe(symbols,TradeApp_obj):
         df_data[symbol] = pd.DataFrame(TradeApp_obj.data[symbols.index(symbol)])
         df_data[symbol].set_index("Date",inplace=True)
     return df_data
-
+'''
 
 def rsi(DF,n=2):
     "function to calculate RSI"
@@ -54,7 +53,7 @@ def rsi(DF,n=2):
     return df['RSI']
 
 
-def EMA(DF,a=3):
+def EMA(DF,a=200):
     """function to calculate EMA with default span of 200 days"""
     df = DF.copy()
     df["EMA"]=df["close price"].ewm(span=a,min_periods=a).mean()
@@ -74,15 +73,20 @@ def CAMARILLA_S3(DF):
     return df['S3']
 
 
-db = sqlite3.connect('/Users/archanajegan/AlgoTrading/code/strategies/db/ema_rsi_camarilla.db')
+db = sqlite3.connect('/Users/jegankarunakaran/AlgoTrading/code/AlgoTrading/strategies/db/ema_rsi_camarilla.db')
 #c=db.cursor()
-queryDate = (dt.datetime.today() - dt.timedelta(days=2)).date()
-start_date = dt.datetime.strptime('20211101', "%Y%m%d").date()
-end_date = (dt.datetime.strptime('20211101', "%Y%m%d") - dt.timedelta(days=2)).date()
-query_daily_price_sql = '''SELECT * from DAILY_PRICE 
-    where close_date < "''' + str(queryDate) + '''"'''
-query_daily_price_backtest_sql = '''SELECT * from DAILY_PRICE 
-    where close_date between "''' + str(end_date) + '''" and "''' + str(start_date) +'''"'''
+queryDate = (dt.datetime.today() - dt.timedelta(days=200)).date()
+#query_daily_price_sql = '''SELECT * from DAILY_PRICE 
+ #   where close_date < "''' + str(queryDate) + '''"'''
+
+query_daily_price_sql = '''SELECT * from DAILY_PRICE '''
+
+#Use for backtesting
+#start_date = dt.datetime.strptime('20211101', "%Y%m%d").date()
+#end_date = (dt.datetime.strptime('20211101', "%Y%m%d") - dt.timedelta(days=2)).date()
+#query_daily_price_backtest_sql = '''SELECT * from DAILY_PRICE 
+#    where close_date between "''' + str(end_date) + '''" and "''' + str(start_date) +'''"'''
+
 
 #c.execute(query_daily_price_backtest_sql)
 #result = c.fetchall()

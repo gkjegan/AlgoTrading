@@ -3,7 +3,7 @@
 """
 Created on Mon Nov  8 20:55:25 2021
 
-@author: archanajegan
+@author: jegankarunakaran
 
 Python SQllite3 table setup
 db location - "/Users/archanajegan/AlgoTrading/code/strategies/db"

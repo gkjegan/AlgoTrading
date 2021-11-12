@@ -61,7 +61,7 @@ def streamSnapshotData(req_num,contract):
     
 def websocket_con(tickers):
     global db
-    db = sqlite3.connect('/Users/archanajegan/AlgoTrading/code/strategies/db/ema_rsi_camarilla.db')
+    db = sqlite3.connect('/Users/jegankarunakaran/AlgoTrading/code/AlgoTrading/strategies/db/ema_rsi_camarilla.db')
     c=db.cursor()
     for ticker in tickers:
         c.execute("CREATE TABLE IF NOT EXISTS TICKER_{} (time datetime primary key,price real(15,5), volume integer)".format(ticker))

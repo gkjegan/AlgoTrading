@@ -14,11 +14,12 @@ import sqlite3
 from ibapi.order import Order
 import time
 import pandas as pd
+import datetime as dt
 
 
 global db
-db = sqlite3.connect('/Users/archanajegan/AlgoTrading/code/strategies/db/ema_rsi_camarilla.db')
-tickers = ["FB","AMZN","INTC"]
+db = sqlite3.connect('/Users/jegankarunakaran/AlgoTrading/code/AlgoTrading/strategies/db/ema_rsi_camarilla.db')
+tickers = ["FB","MSFT"]
 
 
 '''
@@ -68,15 +69,44 @@ con_thread.start()
 time.sleep(1) 
 '''
 
+def  strategy_ema_rsi_cam(intra_date, current_price, ticker):
+    query_intra_sql = ''' SELECT * from TECH_IND where ticker = "'''+ticker+'''" and run_date = "'''+str(intra_date)+'''"'''
+    result_df = pd.read_sql_query(query_intra_sql, db)
+    action = 'NO ACTION'
+    if current_price > result_df.iloc[0]['ema']:
+        if  result_df.iloc[0]['rsi'] <= 20 and current_price < result_df.iloc[0]['s3']:
+            action = 'BUY'
+        if result_df.iloc[0]['rsi'] >= 80 and current_price < result_df.iloc[0]['r3']:
+            action = 'BUY'
+    return action
+    
+
 def getCurrentPrice(ticker):
     """get current price from ticker table"""
-    query_current_price_sql = ''' SELECT price from TICKER_{} ORDER BY time DESC LIMIT 1'''.format(ticker)
+    query_current_price_sql = ''' SELECT * from TICKER_{}'''.format(ticker)
     result_df = pd.read_sql_query(query_current_price_sql, db)
-    return result_df['price']
+    return result_df
     
 for ticker in tickers:
-    current_price = getCurrentPrice(ticker)
-    print(current_price)
+    intraday_data = getCurrentPrice(ticker)
+    intraday_data['action'] = "NO ACTION"
+    #During runtime, intraday isonly one record.
+
+    for index, item in intraday_data.iterrows():
+        intra_time = dt.datetime.strptime(item['time'], "%Y-%m-%d %H:%M:%S").date()
+        intraday_data.loc[index, 'action'] = strategy_ema_rsi_cam(intra_time, item['price'], ticker)
+    print(intraday_data)    
+
+
+
+
+
+
+
+
+
+
+
 
 
 
