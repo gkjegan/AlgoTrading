@@ -21,16 +21,40 @@ import requests
 
 
 
-tickers = ["FB","AMZN","INTC"]
-
+tickers = ['MSFT', 'APPL', 'TSLA', 'FB', 'NVDA', 'JPM', 'V', 'JNJ', 'UNH', 'WMT', 'BAC', 'PG']
+#tickers = ['FB']
+data = {}
 
 class TradeApp(EWrapper, EClient): 
     def __init__(self): 
         EClient.__init__(self, self) 
 
+
     def tickPrice(self, reqId, tickType, price, attrib):
         super().tickPrice(reqId, tickType, price, attrib)
         print("TickPrice. TickerId:", reqId, "tickType:", tickType, "Price:", price)
+        
+        if reqId not in data:
+            data[reqId] = {}
+        
+        if tickType == 66:
+            data[reqId]['delayed_bid'] = price
+
+        if tickType == 67:
+            data[reqId]['delayed_ask'] = price
+        
+        if tickType == 68:
+            data[reqId]['delayed_last_traded'] = price
+
+        if tickType == 75:
+            data[reqId]['delayed_prior'] = price            
+
+        
+        '''
+        if reqId not in self.data:
+            self.data[reqId] = [{"Date":bar.date,"Open":bar.open,"High":bar.high,"Low":bar.low,"Close":bar.close,"Volume":bar.volume}]
+        else:
+            self.data[reqId].append({"Date":bar.date,"Open":bar.open,"High":bar.high,"Low":bar.low,"Close":bar.close,"Volume":bar.volume})        
         if tickType == 68:
             if price > 0:
                 c=db.cursor()
@@ -40,11 +64,15 @@ class TradeApp(EWrapper, EClient):
                 try:
                     db.commit()
                 except:
-                    db.rollback()   
+                    db.rollback() 
+        '''
 
     def tickSize(self, reqId, tickType, size):
         super().tickSize(reqId, tickType, size)
-        print("TickSize Ignored.")        
+        print("TickSize Ignored.")
+
+    
+
         
 
 def usTechStk(symbol,sec_type="STK",currency="USD",exchange="ISLAND"):
@@ -65,6 +93,7 @@ def streamSnapshotData(req_num,contract):
                    snapshot=True,
                    regulatorySnapshot=False,
                    mktDataOptions=[])
+    
 
 
 def cancelMarketData(reqId):
@@ -72,8 +101,7 @@ def cancelMarketData(reqId):
 
 
 def websocket_con():
-    global db
-    db = sqlite3.connect('/Users/jegankarunakaran/AlgoTrading/code/AlgoTrading/strategies/db/ema_rsi_camarilla.db')           
+        
     app.run()
     
 
@@ -86,13 +114,31 @@ time.sleep(1) # some latency added to ensure that the connection is established
 for ticker in tickers:
     print(ticker)
     streamSnapshotData(tickers.index(ticker),usTechStk(ticker))
+    time.sleep(2)
+    print(data)
     
 time.sleep(10)
 #time.sleep(5) # some latency added to ensure that the contract details request has been processed
 for ticker in tickers:
-    time.sleep(5)
+    time.sleep(3)
     print("canceling ticker - {}".format(ticker))
     cancelMarketData(tickers.index(ticker))
+    
+    
+print(data)
+global db
+db = sqlite3.connect('/Users/jegankarunakaran/AlgoTrading/code/AlgoTrading/strategies/db/ema_rsi_camarilla.db')   
+c=db.cursor()
+for items in data:
+    ticker = tickers[items]
+    vals = [data[items]['delayed_bid'], data[items]['delayed_ask'], data[items]['delayed_last_traded'], data[items]['delayed_prior']]  
+    query = "INSERT INTO TICKER_{}(time,delayed_bid,delayed_ask,delayed_last_traded,delayed_prior) VALUES (CURRENT_TIMESTAMP,?,?,?,?)".format(ticker)
+    c.execute(query,vals)
+    try:
+        db.commit()
+    except:
+        db.rollback() 
+
 
 try:
     requests.get("https://hc-ping.com/29c13e21-4792-4418-9e68-b03dc73eef58", timeout=10)
