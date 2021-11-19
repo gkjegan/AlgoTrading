@@ -69,7 +69,7 @@ def histData(req_num,contract,duration,candle_size):
 
 def websocket_con():
     global db
-    db = sqlite3.connect('/Users/jegankarunakaran/AlgoTrading/code/AlgoTrading/strategies/db/ema_rsi_camarilla.db')
+    db = sqlite3.connect('/Users/jegankarunakaran/AlgoTrading/code/AlgoTrading/db/ema_rsi_camarilla.db')
     app.run()
     
 app = TradeApp()

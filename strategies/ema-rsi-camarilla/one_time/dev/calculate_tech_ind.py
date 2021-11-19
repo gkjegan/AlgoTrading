@@ -73,13 +73,13 @@ def CAMARILLA_S3(DF):
     return df['S3']
 
 
-db = sqlite3.connect('/Users/jegankarunakaran/AlgoTrading/code/AlgoTrading/strategies/db/ema_rsi_camarilla.db')
+db = sqlite3.connect('/Users/jegankarunakaran/AlgoTrading/code/AlgoTrading/db/ema_rsi_camarilla.db')
 #c=db.cursor()
 queryDate = (dt.datetime.today() - dt.timedelta(days=200)).date()
 #query_daily_price_sql = '''SELECT * from DAILY_PRICE 
  #   where close_date < "''' + str(queryDate) + '''"'''
 
-query_daily_price_sql = '''SELECT * from DAILY_PRICE '''
+query_daily_price_sql = '''SELECT * from DAILY_PRICE where close_date >= date('now', '-320 days') '''
 
 #Use for backtesting
 #start_date = dt.datetime.strptime('20211101', "%Y%m%d").date()
@@ -91,7 +91,10 @@ query_daily_price_sql = '''SELECT * from DAILY_PRICE '''
 #c.execute(query_daily_price_backtest_sql)
 #result = c.fetchall()
 result_df = pd.read_sql_query(query_daily_price_sql, db)
+
+#print(result_df)
 result_dict = result_df.to_dict('records')
+#print(result_dict)
 #print all rows for a given table
 
 data = {}
@@ -105,21 +108,31 @@ for result in result_dict:
        data[result['ticker']] =  data[result['ticker']].append(temp_dict_df, ignore_index=True)
 
 for key in data:
-    data[key].set_index("close date",inplace=True)
+    #data[key].set_index("close date",inplace=True)
     data[key]['rsi'] = rsi(data[key])
     data[key]['ema'] = EMA(data[key])
     data[key]['r3'] = CAMARILLA_R3(data[key])
     data[key]['s3'] = CAMARILLA_S3(data[key])
+    
+#df = pd.DataFrame(data, columns=['Date', 'Open', 'Close'])  
+#df.set_index('Date', inplace=True)    
 
+for key in data:
+    data[key]['close date']= pd.to_datetime(data[key]['close date'])
+    data[key].set_index("close date",inplace=True)
+    print(data[key].last('5D'))
+
+
+'''
 c = db.cursor()
 for key in data:
     for index, row in data[key].iterrows():
         print(row)
         try:
             print(" ticker:", key, "Run Date:",index, "ema:", row['ema'],"rsi:", row['rsi'],"r3:", row['r3'],"s3:", row['s3'])
-            vals = [key, dt.datetime.strptime(index, "%Y-%m-%d").date(), row['ema'], row['rsi'], row['r3'], row['s3']]
-            query = "INSERT INTO TECH_IND (ticker, run_date, ema, rsi, r3, s3) VALUES (?,?,?,?,?,?)"
-            c.execute(query,vals)
+            #vals = [key, dt.datetime.strptime(index, "%Y-%m-%d").date(), row['ema'], row['rsi'], row['r3'], row['s3']]
+            #query = "INSERT INTO TECH_IND (ticker, run_date, ema, rsi, r3, s3) VALUES (?,?,?,?,?,?)"
+            #c.execute(query,vals)
         except Exception as e:
             print("db error {}".format(e))
             
@@ -128,12 +141,7 @@ for key in data:
         except:
             db.rollback()
 
-        
-
-
-    for row in data[key]:
-        print(row)
-
+'''        
 
 
 

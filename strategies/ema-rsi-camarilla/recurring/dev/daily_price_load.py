@@ -15,8 +15,9 @@ import time
 import datetime as dt
 import sqlite3
 
-#tickers = ['MSFT', 'APPL', 'TSLA', 'FB', 'BRK.B', 'NVDA', 'JPM', 'V', 'JNJ', 'UNH', 'WMT', 'BAC', 'PG']
-tickers = ["FB"]
+tickers = ['MSFT', 'TSLA', 'FB', 'NVDA', 'JPM', 'V', 'JNJ', 'UNH', 'WMT', 'BAC', 'PG']
+#APPL stock is not available, so removed
+#tickers = ["FB"]
 '''
  Steps to follow for every TWA API Calls
 
@@ -50,7 +51,7 @@ class TradeApp(EWrapper, EClient):
         else:
             self.data[reqId].append({"Date":bar.date,"Open":bar.open,"High":bar.high,"Low":bar.low,"Close":bar.close,"Volume":bar.volume})
         
-        #print("reqID:{}, date:{}, open:{}, high:{}, low:{}, close:{}, volume:{}".format(tickers[reqId],bar.date,bar.open,bar.high,bar.low,bar.close,bar.volume))
+        print("reqID:{}, date:{}, open:{}, high:{}, low:{}, close:{}, volume:{}".format(tickers[reqId],bar.date,bar.open,bar.high,bar.low,bar.close,bar.volume))
         try:
             c = db.cursor()
             #print(" ticker:", tickers[reqId], "Time:",dt.datetime.strptime(bar.date, "%Y%m%d").date(), "Open Price:", bar.open,"Close Price:", bar.close,"High Price:", bar.high,"Low Price:", bar.low, "Volume:", bar.volume)
@@ -123,7 +124,7 @@ def websocket_con():
     app.run()
 
 app = TradeApp()
-app.connect(host='127.0.0.1', port=7497, clientId=23) #port 4002 for ib gateway paper trading/7497 for TWS paper trading
+app.connect(host='127.0.0.1', port=4002, clientId=1001) #port 4002 for ib gateway paper trading/7497 for TWS paper trading
 con_thread = threading.Thread(target=websocket_con, daemon=True)
 con_thread.start()
 time.sleep(1) # some latency added to ensure that the connection is established
@@ -140,7 +141,7 @@ histData:
     
 '''
 for ticker in tickers:
-    histData(tickers.index(ticker), usTechStk(ticker),'1 D', '1 day')
+    histData(tickers.index(ticker), usTechStk(ticker),'5 D', '1 day')
     time.sleep(10)
 
 

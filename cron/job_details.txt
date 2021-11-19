@@ -1,0 +1,13 @@
+
+#Daily Price Load at 1am Monday to Friday
+0 1 * * 1-5 /Users/jegankarunakaran/AlgoTrading/code/AlgoTrading/cron/daily_price_load.sh > /Users/jegankarunakaran/AlgoTrading/code/logs/daily_price/`date +\%Y\%m\%d\%H\%M\%S`-cron.log 2>&1; 
+
+
+
+#Technical Indicator Load at 2am Monday to Friday
+0 2 * * 1-5 /Users/jegankarunakaran/AlgoTrading/code/AlgoTrading/cron/tech_ind_load.sh > /Users/jegankarunakaran/AlgoTrading/code/logs/tech_ind/`date +\%Y\%m\%d\%H\%M\%S`-cron.log 2>&1; 
+
+
+
+#Intraday price Load every 30 mins Monday to Friday
+*/30 06-18 * * 1-5 /Users/jegankarunakaran/AlgoTrading/code/AlgoTrading/cron/intraday_price_load.sh > /Users/jegankarunakaran/AlgoTrading/code/logs/intra_price/`date +\%Y\%m\%d\%H\%M\%S`-cron.log 2>&1; 

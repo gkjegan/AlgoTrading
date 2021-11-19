@@ -20,9 +20,11 @@ EMA
 RSI
 and CAMARILLA (only R3 and S3)
 '''
-
+tickers = ['MSFT', 'TSLA', 'FB', 'NVDA', 'JPM', 'V', 'JNJ', 'UNH', 'WMT', 'BAC', 'PG']
+#APPL stock is not available, so removed
 #tickers = ["FB"]
-tickers = ['MSFT', 'APPL', 'TSLA', 'FB', 'BRK.B', 'NVDA', 'JPM', 'V', 'JNJ', 'UNH', 'WMT', 'BAC', 'PG']
+
+
 
 '''
  Exponential Moving Average (EMA)
@@ -34,7 +36,7 @@ Ref: https://www.investopedia.com/terms/e/ema.asp
 def EMA(DF,a=200):
     """function to calculate EMA with default span of 200 days"""
     df = DF.copy()
-    df["EMA"]=df["close price"].ewm(span=a,min_periods=a).mean()
+    df["EMA"]=df["close price"].ewm(span=a, min_periods=a).mean()
     return df['EMA']
 
 
@@ -93,28 +95,17 @@ def CAMARILLA_S3(DF):
 
 
 
+#Connect to db and get all daily price
+db = sqlite3.connect('/Users/jegankarunakaran/AlgoTrading/code/AlgoTrading/db/ema_rsi_camarilla.db')
 
-db = sqlite3.connect('/Users/jegankarunakaran/AlgoTrading/code/AlgoTrading/strategies/db/ema_rsi_camarilla.db')
-#c=db.cursor()
-queryDate = (dt.datetime.today() - dt.timedelta(days=200)).date()
-#query_daily_price_sql = '''SELECT * from DAILY_PRICE 
- #   where close_date < "''' + str(queryDate) + '''"'''
-
-query_daily_price_sql = '''SELECT * from DAILY_PRICE '''
-
-#Use for backtesting
-#start_date = dt.datetime.strptime('20211101', "%Y%m%d").date()
-#end_date = (dt.datetime.strptime('20211101', "%Y%m%d") - dt.timedelta(days=2)).date()
-#query_daily_price_backtest_sql = '''SELECT * from DAILY_PRICE 
-#    where close_date between "''' + str(end_date) + '''" and "''' + str(start_date) +'''"'''
-
-
-#c.execute(query_daily_price_backtest_sql)
-#result = c.fetchall()
+#runDate = dt.datetime.today().date()
+#queryDate = (dt.datetime.today() - dt.timedelta(days=250)).date()
+query_daily_price_sql = '''SELECT * from DAILY_PRICE where close_date >= date('now', '-320 days') '''
 result_df = pd.read_sql_query(query_daily_price_sql, db)
 result_dict = result_df.to_dict('records')
-#print all rows for a given table
 
+
+#Calculate technical indicator for each ticker and date
 data = {}
 for result in result_dict:
     temp_dict = {"close date":result['close_date'],"open price":result['open_price'],"close price":result['close_price']
@@ -126,19 +117,23 @@ for result in result_dict:
        data[result['ticker']] =  data[result['ticker']].append(temp_dict_df, ignore_index=True)
 
 for key in data:
-    data[key].set_index("close date",inplace=True)
     data[key]['rsi'] = rsi(data[key])
     data[key]['ema'] = EMA(data[key])
     data[key]['r3'] = CAMARILLA_R3(data[key])
     data[key]['s3'] = CAMARILLA_S3(data[key])
 
+print(data)
+
 c = db.cursor()
 for key in data:
-    for index, row in data[key].iterrows():
-        print(row)
+    data[key]['close date']= pd.to_datetime(data[key]['close date'])
+    data[key].set_index("close date",inplace=True)
+    data_to_insert = data[key].last('5D')
+    for index, row in data_to_insert.iterrows():
+        #print(row)
         try:
             print(" ticker:", key, "Run Date:",index, "ema:", row['ema'],"rsi:", row['rsi'],"r3:", row['r3'],"s3:", row['s3'])
-            vals = [key, dt.datetime.strptime(index, "%Y-%m-%d").date(), row['ema'], row['rsi'], row['r3'], row['s3']]
+            vals = [key, dt.datetime.strptime(str(index), "%Y-%m-%d %H:%M:%S").date(), row['ema'], row['rsi'], row['r3'], row['s3']]
             query = "INSERT INTO TECH_IND (ticker, run_date, ema, rsi, r3, s3) VALUES (?,?,?,?,?,?)"
             c.execute(query,vals)
         except Exception as e:
@@ -149,13 +144,20 @@ for key in data:
         except:
             db.rollback()
 
-        
-
-
-    for row in data[key]:
-        print(row)
-
-
-
-
 db.close()
+
+
+
+
+#c=db.cursor()
+#query_daily_price_sql = '''SELECT * from DAILY_PRICE 
+ #   where close_date < "''' + str(queryDate) + '''"'''
+#Use for backtesting
+#start_date = dt.datetime.strptime('20211101', "%Y%m%d").date()
+#end_date = (dt.datetime.strptime('20211101', "%Y%m%d") - dt.timedelta(days=2)).date()
+#query_daily_price_backtest_sql = '''SELECT * from DAILY_PRICE 
+#    where close_date between "''' + str(end_date) + '''" and "''' + str(start_date) +'''"'''
+
+#c.execute(query_daily_price_backtest_sql)
+#result = c.fetchall()
+#print all rows for a given table
