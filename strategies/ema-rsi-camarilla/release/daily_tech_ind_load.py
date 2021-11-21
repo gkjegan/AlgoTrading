@@ -24,8 +24,6 @@ tickers = ['MSFT', 'TSLA', 'FB', 'NVDA', 'JPM', 'V', 'JNJ', 'UNH', 'WMT', 'BAC',
 #APPL stock is not available, so removed
 #tickers = ["FB"]
 
-
-
 '''
  Exponential Moving Average (EMA)
      An exponential moving average (EMA) is a type of moving average (MA) that places a greater weight 
@@ -73,7 +71,6 @@ def rsi(DF,n=2):
     return df['RSI']
 
 
-
 '''
 Camarilla R3 and S3 are pivot points. A pivot point is a technical analysis indicator, or calculations, 
 used to determine the overall trend of the market over different time frames.
@@ -94,17 +91,31 @@ def CAMARILLA_S3(DF):
 
 
 
+'''
+For each prior day, 
+to calculate EMA, we need 200 days of data starting from prior date.
+to calculate RSI, we need 2 days of data starting from prior date.
+to calculate CAMARILLA pivot points, we need 1 day of prior date.
+
+so we will get the super set of 200 days of data from DAILY_PRICE. 
+we are getting 320 days to include weekends. 
+
+'''
 
 #Connect to db and get all daily price
 db = sqlite3.connect('/Users/jegankarunakaran/AlgoTrading/code/AlgoTrading/db/ema_rsi_camarilla.db')
-
-#runDate = dt.datetime.today().date()
-#queryDate = (dt.datetime.today() - dt.timedelta(days=250)).date()
 query_daily_price_sql = '''SELECT * from DAILY_PRICE where close_date >= date('now', '-320 days') '''
 result_df = pd.read_sql_query(query_daily_price_sql, db)
 result_dict = result_df.to_dict('records')
 
+'''
+Calculate technical indicator for each ticker and store in a following data structure
 
+data { <ticker>"FB": pandas datafrom with columns "close date, open price, low price, high price, ema, rsi, r3, s3" }
+each ticker as key, will have dataframe of ~222 rows (Number of working days in 320 days)
+
+Also, note, there will be 199 NaNs for EMI as EMI needs 200 day average. so we will have EMA for the last ~22 days
+'''
 #Calculate technical indicator for each ticker and date
 data = {}
 for result in result_dict:
@@ -122,8 +133,19 @@ for key in data:
     data[key]['r3'] = CAMARILLA_R3(data[key])
     data[key]['s3'] = CAMARILLA_S3(data[key])
 
-print(data)
+#print(data)
+'''
+data { <ticker>"FB": pandas datafrom with columns "close date, open price, low price, high price, ema, rsi, r3, s3" }
 
+For each ticker, 
+take the last 3-5 days of closed date. where we should have all techincal indicators calculated,
+insert into TECH_IND table with ticker and closed_date as combined primary key.
+
+Why 5 days:
+Ideally, we need only prior day. just to include weekends and if any miss on the privious days, the daily job will make sure we have last 5 days covered.
+if data is already present, primary key error will stop overriding. 
+(NOT a Great Implementation, we need to revisit.)    
+'''
 c = db.cursor()
 for key in data:
     data[key]['close date']= pd.to_datetime(data[key]['close date'])
@@ -132,7 +154,7 @@ for key in data:
     for index, row in data_to_insert.iterrows():
         #print(row)
         try:
-            print(" ticker:", key, "Run Date:",index, "ema:", row['ema'],"rsi:", row['rsi'],"r3:", row['r3'],"s3:", row['s3'])
+            #print(" ticker:", key, "Run Date:",index, "ema:", row['ema'],"rsi:", row['rsi'],"r3:", row['r3'],"s3:", row['s3'])
             vals = [key, dt.datetime.strptime(str(index), "%Y-%m-%d %H:%M:%S").date(), row['ema'], row['rsi'], row['r3'], row['s3']]
             query = "INSERT INTO TECH_IND (ticker, run_date, ema, rsi, r3, s3) VALUES (?,?,?,?,?,?)"
             c.execute(query,vals)
@@ -145,19 +167,3 @@ for key in data:
             db.rollback()
 
 db.close()
-
-
-
-
-#c=db.cursor()
-#query_daily_price_sql = '''SELECT * from DAILY_PRICE 
- #   where close_date < "''' + str(queryDate) + '''"'''
-#Use for backtesting
-#start_date = dt.datetime.strptime('20211101', "%Y%m%d").date()
-#end_date = (dt.datetime.strptime('20211101', "%Y%m%d") - dt.timedelta(days=2)).date()
-#query_daily_price_backtest_sql = '''SELECT * from DAILY_PRICE 
-#    where close_date between "''' + str(end_date) + '''" and "''' + str(start_date) +'''"'''
-
-#c.execute(query_daily_price_backtest_sql)
-#result = c.fetchall()
-#print all rows for a given table
