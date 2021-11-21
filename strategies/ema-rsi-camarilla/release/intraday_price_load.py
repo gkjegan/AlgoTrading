@@ -15,7 +15,6 @@ from ibapi.wrapper import EWrapper
 from ibapi.contract import Contract
 import threading
 import sqlite3
-import datetime as dt
 import time
 import requests
 
