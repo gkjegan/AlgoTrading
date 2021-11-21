@@ -7,20 +7,20 @@
 Sample space - S&P500 top 12 tickers based on market cap
 [MSFT, APPL, TSLA, FB, NVDA, JPM, V, JNJ, UNH, WMT, BAC, PG]
 
-If prior day close price is more than 200 day exponential moving average:
-    prior day 2 day RSI is below 20 and current price is less than camarilla S3:
-        BUY
-    prior day 2 day RSI is above 80 and current price is greater than camarilla R3:
-        SELL
+- If prior day close price is more than 200 day exponential moving average:
+  - prior day 2 day RSI is below 20 and current price is less than camarilla S3:
+    - BUY
+  - prior day 2 day RSI is above 80 and current price is greater than camarilla R3:
+    - SELL
 
 ## Design
 ### Data required for technical indicators:
-EMA - Closing price for the last 200 days.
-2 day RSI - Closing price for the last 3 days
-Camarilla - Previous day High, Low, and Closing
-R3 -> Closing + ((High -Low) x 1.2500)
-S3 -> Closing – ((High -Low) x 1.2500)
-All we need is the previous 200 days of Closing, High, Low prices for 12 tickers.
+1. EMA - Closing price for the last 200 days.
+2. 2 day RSI - Closing price for the last 3 days
+3. Camarilla - Previous day High, Low, and Closing
+   - R3 -> Closing + ((High -Low) x 1.2500)
+   - S3 -> Closing – ((High -Low) x 1.2500)
+To start with, all we need is the previous 200 days of Closing, High, Low prices for 12 tickers.
 
 
 ### Performance measure of strategy:
