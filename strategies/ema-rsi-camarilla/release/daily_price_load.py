@@ -9,11 +9,11 @@ Created on Mon Nov  8 21:14:31 2021
 from ibapi.client import EClient
 from ibapi.wrapper import EWrapper
 from ibapi.contract import Contract
-import pandas as pd
 import threading
 import time
 import datetime as dt
 import sqlite3
+import requests
 
 tickers = ['MSFT', 'TSLA', 'FB', 'NVDA', 'JPM', 'V', 'JNJ', 'UNH', 'WMT', 'BAC', 'PG']
 #APPL stock is not available, so removed
@@ -145,4 +145,11 @@ for ticker in tickers:
     time.sleep(10)
 
 
-
+'''
+Ping to healthchecks.io for  monitoring
+'''
+try:
+    requests.get("https://hc-ping.com/ca8d6614-399b-4fb8-8672-6f535cda4d58", timeout=10)
+except requests.RequestException as e:
+    # Log ping failure here...
+    print("Ping failed: %s" % e)

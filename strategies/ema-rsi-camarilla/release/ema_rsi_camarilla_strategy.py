@@ -97,19 +97,40 @@ class TradeApp(EWrapper, EClient):
     Make Buy or Sell decision for individual ticker and date.
     This function is for one row. used loc[0]. not for more than one rows.
     '''
-    def  strategy_ema_rsi_cam(self, intra_date, current_price, ticker):
+    def  strategy_ema_rsi_cam(self, intra_date, bid_price, ask_price, ticker):
         query_intra_sql = ''' SELECT * from TECH_IND where ticker = "'''+ticker+'''" and run_date = "'''+str(intra_date)+'''"'''
-        #print(query_intra_sql)
+        print(query_intra_sql)
         result_df = pd.read_sql_query(query_intra_sql, db)
         if not result_df.empty:
-            result_df['action'] = 'NO ACTION'
-            if current_price > result_df.iloc[0]['ema']:
-                if  result_df.iloc[0]['rsi'] <= 20 and current_price < result_df.iloc[0]['s3']:
+            print("Tech Indicator: bid - {}, ask-{}, ema-{}, rsi-{}, r3-{}, s3-{}".format(bid_price, ask_price,result_df.iloc[0]['ema'], result_df.iloc[0]['rsi'],result_df.iloc[0]['r3'],result_df.iloc[0]['s3'])) 
+            result_df['action'] = "NO ACTION"
+            result_df['unit_price'] = 0
+            
+            if  result_df.iloc[0]['rsi'] <= 20:
+                if ask_price > result_df.iloc[0]['ema'] and ask_price < result_df.iloc[0]['s3']:
                     result_df['action'] = 'BUY'
-                    if result_df.iloc[0]['rsi'] >= 80 and current_price < result_df.iloc[0]['r3']:
+                    result_df['unit_price'] = ask_price
+            if result_df.iloc[0]['rsi'] >= 80:
+                if bid_price > result_df.iloc[0]['ema'] and bid_price < result_df.iloc[0]['r3']:
+                    result_df['action'] = 'SELL'
+                    result_df['unit_price'] = bid_price
+                    
+            ''' 
+            if ask_price > result_df.iloc[0]['ema']:
+                if  result_df.iloc[0]['rsi'] <= 20 and ask_price < result_df.iloc[0]['s3']:
+                    result_df['action'] = 'BUY'
+            if bid_price > result_df.iloc[0]['ema']:
+                    if result_df.iloc[0]['rsi'] >= 80 and bid_price < result_df.iloc[0]['r3']:
                         result_df['action'] = 'SELL'
+            '''
         #print(result_df)                
         return result_df
+
+    def prev_weekday(self, adate):
+        adate -= dt.timedelta(days=1)
+        while adate.weekday() > 4: # Mon-Fri are 0-4
+            adate -= dt.timedelta(days=1)
+        return adate
 
 
     def decideBuyOrSell(self, intraday_data, ticker, order_id, portfolio_df):
@@ -119,27 +140,31 @@ class TradeApp(EWrapper, EClient):
             data = {}
             data['ticker'] = ticker
             data['strategy_name'] = 'ema-rsi-camarilla'
-            data['unit_price'] = item['delayed_last_traded']
-            data['quantity'] = 1
-            data['total_price'] =  1 * item['delayed_last_traded']
+            #data['bid_price'] = item['delayed_bid']
+            #data['ask_price'] = item['delayed_ask']            
+            #data['quantity'] = 1
+            #data['total_price'] =  1 * item['delayed_bid']
             data['status'] =  0
 
-            if item['delayed_last_traded'] == 0:
+            if item['delayed_bid'] == 0 or item['delayed_ask'] == 0:
                 data['tech_indicator'] =  'NA'
-                data['action'] =  'NO ACTION'
+                data['action'] =  "NO ACTION - Delyed Bid {}, Delayed ask {}".format(item['delayed_bid'], item['delayed_ask'])
             else:
                     intra_time = dt.datetime.strptime(item['time'], "%Y-%m-%d %H:%M:%S").date()
                     if intra_time == dt.datetime.today().date():
-                        history_date = (dt.datetime.today() - dt.timedelta(days=1)).date()
+                        #history_date = (dt.datetime.today() - dt.timedelta(days=1)).date()
+                        history_date = self.prev_weekday(dt.datetime.today().date())
                     else:
                         history_date = intra_time
-                    strategy_result_df = self.strategy_ema_rsi_cam(history_date, item['delayed_last_traded'], ticker)
+                    strategy_result_df = self.strategy_ema_rsi_cam(history_date, item['delayed_bid'],item['delayed_ask'], ticker)
                     if strategy_result_df.empty:
                         data['tech_indicator'] =  'NA'
-                        data['action'] =  'NO ACTION'
+                        data['action'] =  'NO ACTION - strategy result is empty'
                     else:
                         data['tech_indicator'] =  '''ema:{}, rsi:{}, camarilla_r3:{}, camarilla_s3:{}'''.format(strategy_result_df.iloc[0]['ema'], strategy_result_df.iloc[0]['rsi'], strategy_result_df.iloc[0]['r3'], strategy_result_df.iloc[0]['s3'])
                         data['action'] = strategy_result_df.iloc[0]['action']
+                        data['unit_price'] = strategy_result_df.iloc[0]['unit_price']
+                        
         
             print('stock:{} - action:{}'.format(ticker,data['action'] ))
             if data['action'] == "NO ACTION":
@@ -149,6 +174,8 @@ class TradeApp(EWrapper, EClient):
                 print(order_id)
                 if data['action'] == 'BUY':
                     if not portfolio_df.empty and portfolio_df.iloc[0]['active_stocks'] < 2:
+                        data['quantity'] = 1
+                        data['total_price'] =  data['quantity'] * data['unit_price']
                         app.placeOrder(order_id, self.usTechStk(data['ticker']), self.limitOrder(data['action'],data['quantity'],data['unit_price'])) # EClient function to request contract details
                         time.sleep(10) # some latency added to ensure that the contract details request has been processed
                         
@@ -171,6 +198,7 @@ class TradeApp(EWrapper, EClient):
                 if data['action'] == 'SELL':
                     if not portfolio_df.empty and portfolio_df.iloc[0]['active_stocks'] > 0:
                         data['quantity'] = portfolio_df.iloc[0]['active_stocks']
+                        data['total_price'] =  data['quantity'] * data['unit_price']
                         app.placeOrder(order_id, self.usTechStk(data['ticker']), self.limitOrder(data['action'],data['quantity'],data['unit_price'])) # EClient function to request contract details
                         time.sleep(10) # some latency added to ensure that the contract details request has been processed
                       
