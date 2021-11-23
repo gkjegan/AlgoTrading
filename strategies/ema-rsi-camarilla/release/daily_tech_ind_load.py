@@ -12,6 +12,7 @@ import sqlite3
 import datetime as dt
 import pandas as pd
 import numpy as np
+import requests
 
 '''
 This script will calculate all the technical indicators needed for the EMA-RSI-CAMRARILLA strategy.
@@ -167,3 +168,13 @@ for key in data:
             db.rollback()
 
 db.close()
+
+
+'''
+Ping to healthchecks.io for  monitoring
+'''
+try:
+    requests.get("https://hc-ping.com/9e080b3b-cfc0-4c8f-a732-7fbb813af18a", timeout=10)
+except requests.RequestException as e:
+    # Log ping failure here...
+    print("Ping failed: %s" % e)

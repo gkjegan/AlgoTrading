@@ -16,15 +16,78 @@ import time
 import pandas as pd
 import datetime as dt
 #from uuid import uuid4
-
+import requests
 
 
 tickers = ['MSFT', 'TSLA', 'FB', 'NVDA', 'JPM', 'V', 'JNJ', 'UNH', 'WMT', 'BAC', 'PG']
 #tickers = ["FB","MSFT", "JPM"]
 
+'''
+**Steps to follow for every TWA API Calls**
+
+1. Create a class that inherits EClient and EWrapper classes from TWA API. class TradeApp(EWrapper, EClient): 
+2. Instantiate the class app = TradeApp()
+3. Connect the app to TWA withP, port, and clientId app.connect(host='127.0.0.1', port=7497, clientId=23) 
+4. Identify what client API to use. for example, to get place an order we need a valid unique Order Id.\
+    When the app is strated, the callback function called  "nextValidId" is called.
+5. Using the next valid orderId, call the start method for buy or sell
 
 
 
+**Data Needed for decision:**
+PORTFOLIO - PORTFOLIO table holds the summary of all tickers and total number of active stocks and total price invested. 
+This table will serve as a complete summary and also to apply caps on the total number of stocks or amount to invest.
+
+CURRENT_PRICE - This is latest price from intraday price load  (intraday_price_load.py) stored in TICKER_{} table. 
+we get the latest current price using query order by time and desc limit 1:
+    TBD: Not a ideal way to get the latest. This script runs every 40 mins and intraday runs every 30 mins. Ideally we need the data that was loaded latest.
+    If for any reason, if the last load fails, this query will fetch delayed data. For any delayed data, our order may not go through. need to revisit this logic
+
+TECH_IND details - TECH_IND table holds the technical indicator for each ticker and prior date. This data will give ema, rsi and camarilla s3 and r3 to decide buy or sell
+
+**Buy or Sell logic**
+function "decideBuyOrSell" is run on each ticker and will take following parameter
+for each ticker
+- PORTFOLIO dataframe for the particular ticker with strategy_name, ticker, active_stocks, total_price, and time -  [ONLY ONE ROW SHOULD BE PRESENT]
+- ticker - ticker symbol
+- nextValidOrderId - unique orderid if buy or sell decision is made
+- INTRADAY_DATA dataframe for the particular ticker with time, delayed_bid, delayed_ask, delayed_last_traded, and delayed_prior [AGAIN the query limits the result to ONE ROW]
+
+
+1. build a data dictionary with the following sample format to store in TRADE_TRANSACTION table.
+trade_transaction_data = {
+        'ticker': 'MSFT'<ticker symbol>
+        'strategy_name': 'ema-rsi-camarilla'
+        'status': 0 [TBD: Need to revisit status to check if the order is filled, in progress or cancelled]
+        'action': 'NO ACTION | BUY | SELL'
+        'technical indicator': string to display the emi, rsi, r3, s3 data or NA
+        'unit_price': bid price  or ask price based on buy or sell
+        'quantity': quantity to buy (usualy 1) or sell (all the active_stocks usually 2)
+        'total_price': quantity * unit_price
+        'time': CURRENT TIMESTAMP
+        }
+
+1. ticker is straight forward. assign ticker from params
+2. strategy name is also straignt forward. currently hard coded
+3. status is also hard coded to 0. Need revisit. @TBD
+4. action is the key to decision.
+    to decide buy or sell, you need prior day technical indicator and latest delayed_bid and delayed_ask
+    a. calculate prior weekday - take the current run date and use "prev_weekday" function to calculate the previous weekday
+    b. call "strategy_ema_rsi_cam" function with prior weekday, delayed_bid, delayed_ask, ticker to get three things
+        i. action - BUY or SELL or NO ACTION
+        ii. technical indicator - details of rsi, ema, r3, and s3 for the ticker or NA if not available
+        iii. unit_price - bid if action is SELL, ask if action is BUY
+    c. add unit_price, action, and tech_indicator to trade_transaction_data
+5. If BUY,
+    a. Place limit order with fixed quantity 1 for ask price 
+    b. populate trade_transaction table
+    c. update portfolio table
+6. If SELL,
+    a. Place limit order with available stocks quantity (2) for bid price 
+    b. populate trade_transaction table
+    c. update portfolio table
+    
+'''
 class TradeApp(EWrapper, EClient): 
     
     def __init__(self): 
@@ -42,9 +105,6 @@ class TradeApp(EWrapper, EClient):
         self.start()
     
    
-    '''
-    TBD: Comments
-    '''
     def start(self):
         global db
         db = sqlite3.connect('/Users/jegankarunakaran/AlgoTrading/code/AlgoTrading/db/ema_rsi_camarilla.db')  
@@ -90,41 +150,48 @@ class TradeApp(EWrapper, EClient):
          """get current price from ticker table"""
          query_current_price_sql = ''' SELECT * from TICKER_{} ORDER BY time DESC LIMIT 1'''.format(ticker)
          result_df = pd.read_sql_query(query_current_price_sql, db)
+         print("Intraday Data:")
          print(result_df)
          return result_df
 
     '''
-    Make Buy or Sell decision for individual ticker and date.
-    This function is for one row. used loc[0]. not for more than one rows.
+    MThe core strategy to decide BUY or SELL
+    if RSI < 20, ASK_PRICE > EMA, and ASK_PRICE < S3:
+        BUY
+    if RSI > 20, BID_PRICE > EMA, and BID_PRICE < R3:
+        SELL    
     '''
-    def  strategy_ema_rsi_cam(self, intra_date, bid_price, ask_price, ticker):
-        query_intra_sql = ''' SELECT * from TECH_IND where ticker = "'''+ticker+'''" and run_date = "'''+str(intra_date)+'''"'''
+    def  strategy_ema_rsi_cam(self, prior_weekday, bid_price, ask_price, ticker):
+        query_intra_sql = ''' SELECT * from TECH_IND where ticker = "'''+ticker+'''" and run_date = "'''+str(prior_weekday)+'''"'''
         print(query_intra_sql)
         result_df = pd.read_sql_query(query_intra_sql, db)
-        if not result_df.empty:
-            print("Tech Indicator: bid - {}, ask-{}, ema-{}, rsi-{}, r3-{}, s3-{}".format(bid_price, ask_price,result_df.iloc[0]['ema'], result_df.iloc[0]['rsi'],result_df.iloc[0]['r3'],result_df.iloc[0]['s3'])) 
-            result_df['action'] = "NO ACTION"
-            result_df['unit_price'] = 0
+
+        if result_df.empty:
+            return 0, "NA", "NO ACTION - No technical indicator for ticker {} and prior weekday {}".format(ticker, prior_weekday)
+        
+        else:
+            tech_indicator_data = result_df.iloc[0]
+            unit_price = 0
+            action = ""
+            tech_indicator_msg = "Tech Indicator: bid - {}, ask-{}, ema-{}, rsi-{}, r3-{}, s3-{}".format(bid_price, ask_price, tech_indicator_data['ema'], tech_indicator_data['rsi'],tech_indicator_data['r3'],tech_indicator_data['s3'])
+            print(tech_indicator_msg) 
+            if  tech_indicator_data['rsi'] <= 20 and ask_price > tech_indicator_data['ema'] and ask_price < tech_indicator_data['s3']:
+                action = "BUY"
+                unit_price = ask_price
+                print("BUY SIGNAL:  RSI condition - {}, EMA condition - {}, Camarilla condition - {} ".format(tech_indicator_data['rsi'] <= 20 , ask_price > tech_indicator_data['ema'], ask_price < tech_indicator_data['s3'])) 
+            else :
+                action = "NO ACTION"
+                print("NO ACTION - BUY SKIPPED RSI condition - {}, EMA condition - {}, Camarilla condition - {} ".format(tech_indicator_data['rsi'] <= 20 , ask_price > tech_indicator_data['ema'], ask_price < tech_indicator_data['s3']))
+            if tech_indicator_data['rsi'] >= 80 and bid_price > tech_indicator_data['ema'] and bid_price < tech_indicator_data['r3']:
+                action = "SELL"
+                unit_price = bid_price
+                print("SELL SIGNAL: RSI condition - {}, EMA condition - {}, Camarilla condition - {} ".format(tech_indicator_data['rsi'] >= 80 , bid_price > tech_indicator_data['ema'], bid_price < tech_indicator_data['r3'])) 
+            else:
+                action = "NO ACTION"
+                print("NO ACTION - SELL SKIPPED RSI condition - {}, EMA condition - {}, Camarilla condition - {} ".format(tech_indicator_data['rsi'] >= 80 , bid_price > tech_indicator_data['ema'], bid_price < tech_indicator_data['r3']))
+            return unit_price, tech_indicator_msg, action
             
-            if  result_df.iloc[0]['rsi'] <= 20:
-                if ask_price > result_df.iloc[0]['ema'] and ask_price < result_df.iloc[0]['s3']:
-                    result_df['action'] = 'BUY'
-                    result_df['unit_price'] = ask_price
-            if result_df.iloc[0]['rsi'] >= 80:
-                if bid_price > result_df.iloc[0]['ema'] and bid_price < result_df.iloc[0]['r3']:
-                    result_df['action'] = 'SELL'
-                    result_df['unit_price'] = bid_price
-                    
-            ''' 
-            if ask_price > result_df.iloc[0]['ema']:
-                if  result_df.iloc[0]['rsi'] <= 20 and ask_price < result_df.iloc[0]['s3']:
-                    result_df['action'] = 'BUY'
-            if bid_price > result_df.iloc[0]['ema']:
-                    if result_df.iloc[0]['rsi'] >= 80 and bid_price < result_df.iloc[0]['r3']:
-                        result_df['action'] = 'SELL'
-            '''
-        #print(result_df)                
-        return result_df
+    
 
     def prev_weekday(self, adate):
         adate -= dt.timedelta(days=1)
@@ -132,102 +199,77 @@ class TradeApp(EWrapper, EClient):
             adate -= dt.timedelta(days=1)
         return adate
 
-
+    def populate_trade_transaction(self, trade_transaction_date):
+        try:
+            c = db.cursor()
+            #insert a buy transaction in trade_transaction table
+            columns = ', '.join("'" + str(x) + "'" for x in trade_transaction_date.keys())
+            columns = columns+', "time"'
+            values = ', '.join("'" + str(x)+ "'" for x in trade_transaction_date.values())
+            values = values + ', CURRENT_TIMESTAMP'
+            query = "INSERT INTO %s ( %s ) VALUES ( %s );" % ('TRADE_TRANSACTION', columns, values)
+            c.execute(query)
+        except Exception as e:
+            print("db error {}".format(e))
+        try:
+            db.commit()
+        except:
+            db.rollback()  
+        
+    def update_portfolio(self, trade_transaction_data, active_stocks, total_price):
+        try:
+            c = db.cursor()
+            #update portfolio table
+            update_query = "update portfolio set active_stocks = {}, total_price = {} , time = CURRENT_TIMESTAMP where strategy_name = 'ema_rsi_camarilla' and ticker = '{}'".format(active_stocks, total_price, trade_transaction_data['ticker']);
+            c.execute(update_query)
+        except Exception as e:
+            print("db error {}".format(e))
+        try:
+            db.commit()
+        except:
+            db.rollback() 
+            
+    '''
+    see detailed comments in the section **Buy or Sell logic** above
+    '''
     def decideBuyOrSell(self, intraday_data, ticker, order_id, portfolio_df):
-        c = db.cursor()
-        #During runtime, intraday isonly one record.
-        for index, item in intraday_data.iterrows():
-            data = {}
-            data['ticker'] = ticker
-            data['strategy_name'] = 'ema-rsi-camarilla'
-            #data['bid_price'] = item['delayed_bid']
-            #data['ask_price'] = item['delayed_ask']            
-            #data['quantity'] = 1
-            #data['total_price'] =  1 * item['delayed_bid']
-            data['status'] =  0
-
-            if item['delayed_bid'] == 0 or item['delayed_ask'] == 0:
-                data['tech_indicator'] =  'NA'
-                data['action'] =  "NO ACTION - Delyed Bid {}, Delayed ask {}".format(item['delayed_bid'], item['delayed_ask'])
+        intraday_item = intraday_data.iloc[0]
+        trade_transaction_data = {}
+        trade_transaction_data['ticker'] = ticker
+        trade_transaction_data['strategy_name'] = 'ema-rsi-camarilla'
+        trade_transaction_data['status'] =  0
+        prior_weekday = self.prev_weekday(dt.datetime.today().date())
+        #call strategy to decide buy or sell or no action
+        unit_price, tech_indicator, action = self.strategy_ema_rsi_cam(prior_weekday,intraday_item['delayed_bid'],intraday_item['delayed_ask'], ticker )
+        trade_transaction_data['action'] = action
+        trade_transaction_data['tech_indicator'] = tech_indicator
+        trade_transaction_data['unit_price'] = unit_price
+        if trade_transaction_data['action'] == 'BUY':
+            if not portfolio_df.empty and portfolio_df.iloc[0]['active_stocks'] < 2:
+                trade_transaction_data['quantity'] = 1
+                trade_transaction_data['total_price'] =  trade_transaction_data['quantity'] * trade_transaction_data['unit_price']
+                app.placeOrder(order_id, self.usTechStk(trade_transaction_data['ticker']), self.limitOrder(trade_transaction_data['action'],trade_transaction_data['quantity'],trade_transaction_data['unit_price'])) # EClient function to request contract details
+                time.sleep(10) # some latency added to ensure that the contract details request has been processed
+                self.populate_trade_transaction(trade_transaction_data)
+                active_stocks = portfolio_df.iloc[0]['active_stocks']+trade_transaction_data['quantity']
+                total_price = portfolio_df.iloc[0]['total_price']+trade_transaction_data['unit_price']
+                self.update_portfolio(trade_transaction_data, active_stocks, total_price)
             else:
-                    intra_time = dt.datetime.strptime(item['time'], "%Y-%m-%d %H:%M:%S").date()
-                    if intra_time == dt.datetime.today().date():
-                        #history_date = (dt.datetime.today() - dt.timedelta(days=1)).date()
-                        history_date = self.prev_weekday(dt.datetime.today().date())
-                    else:
-                        history_date = intra_time
-                    strategy_result_df = self.strategy_ema_rsi_cam(history_date, item['delayed_bid'],item['delayed_ask'], ticker)
-                    if strategy_result_df.empty:
-                        data['tech_indicator'] =  'NA'
-                        data['action'] =  'NO ACTION - strategy result is empty'
-                    else:
-                        data['tech_indicator'] =  '''ema:{}, rsi:{}, camarilla_r3:{}, camarilla_s3:{}'''.format(strategy_result_df.iloc[0]['ema'], strategy_result_df.iloc[0]['rsi'], strategy_result_df.iloc[0]['r3'], strategy_result_df.iloc[0]['s3'])
-                        data['action'] = strategy_result_df.iloc[0]['action']
-                        data['unit_price'] = strategy_result_df.iloc[0]['unit_price']
-                        
+                print("Skipping buy for ticker: {} as we already hold max active stocks. portfolio details: {}".format(trade_transaction_data['ticker'],portfolio_df))
+         
+        if trade_transaction_data['action'] == 'SELL':
+            if not portfolio_df.empty and portfolio_df.iloc[0]['active_stocks'] > 0:
+                trade_transaction_data['quantity'] = portfolio_df.iloc[0]['active_stocks']
+                trade_transaction_data['total_price'] =  trade_transaction_data['quantity'] * trade_transaction_data['unit_price']
+                app.placeOrder(order_id, self.usTechStk(trade_transaction_data['ticker']), self.limitOrder(trade_transaction_data['action'],trade_transaction_data['quantity'],trade_transaction_data['unit_price'])) # EClient function to request contract details
+                time.sleep(10) # some latency added to ensure that the contract details request has been processed
+                self.populate_trade_transaction(trade_transaction_data)
+                active_stocks = portfolio_df.iloc[0]['active_stocks']-trade_transaction_data['quantity']
+                total_price = portfolio_df.iloc[0]['total_price'] * active_stocks
+                self.update_portfolio(trade_transaction_data, active_stocks, total_price)
+            else:
+                print("Skipping sell for ticker: {} as we already hold no active stocks. portfolio details: {}".format(trade_transaction_data['ticker'],portfolio_df))  
         
-            print('stock:{} - action:{}'.format(ticker,data['action'] ))
-            if data['action'] == "NO ACTION":
-                continue
-        
-            try:
-                print(order_id)
-                if data['action'] == 'BUY':
-                    if not portfolio_df.empty and portfolio_df.iloc[0]['active_stocks'] < 2:
-                        data['quantity'] = 1
-                        data['total_price'] =  data['quantity'] * data['unit_price']
-                        app.placeOrder(order_id, self.usTechStk(data['ticker']), self.limitOrder(data['action'],data['quantity'],data['unit_price'])) # EClient function to request contract details
-                        time.sleep(10) # some latency added to ensure that the contract details request has been processed
-                        
-                        #insert a buy transaction in trade_transaction table
-                        columns = ', '.join("'" + str(x) + "'" for x in data.keys())
-                        columns = columns+', "time"'
-                        values = ', '.join("'" + str(x)+ "'" for x in data.values())
-                        values = values + ', CURRENT_TIMESTAMP'
-                        query = "INSERT INTO %s ( %s ) VALUES ( %s );" % ('TRADE_TRANSACTION', columns, values)
-                        c.execute(query)
-                        
-                        #update portfolio table
-                        active_stocks = portfolio_df.iloc[0]['active_stocks']+data['quantity']
-                        total_price = portfolio_df.iloc[0]['total_price']+data['unit_price']
-                        update_query = "update portfolio set active_stocks = {}, total_price = {} , time = CURRENT_TIMESTAMP where strategy_name = 'ema_rsi_camarilla' and ticker = '{}'".format(active_stocks, total_price, data['ticker']);
-                        c.execute(update_query)
-                    else:
-                        print("Skipping buy for ticker: {} as we already hold max active stocks. portfolio details: {}".format(data['ticker'],portfolio_df))
- 
-                if data['action'] == 'SELL':
-                    if not portfolio_df.empty and portfolio_df.iloc[0]['active_stocks'] > 0:
-                        data['quantity'] = portfolio_df.iloc[0]['active_stocks']
-                        data['total_price'] =  data['quantity'] * data['unit_price']
-                        app.placeOrder(order_id, self.usTechStk(data['ticker']), self.limitOrder(data['action'],data['quantity'],data['unit_price'])) # EClient function to request contract details
-                        time.sleep(10) # some latency added to ensure that the contract details request has been processed
-                      
-                        #insert a buy transaction in trade_transaction table
-                        columns = ', '.join("'" + str(x) + "'" for x in data.keys())
-                        columns = columns+', "time"'
-                        values = ', '.join("'" + str(x)+ "'" for x in data.values())
-                        values = values + ', CURRENT_TIMESTAMP'
-                        query = "INSERT INTO %s ( %s ) VALUES ( %s );" % ('TRADE_TRANSACTION', columns, values)
-                        c.execute(query)
-                      
-                        #update portfolio table
-                        active_stocks = portfolio_df.iloc[0]['active_stocks']-data['quantity']
-                        total_price = portfolio_df.iloc[0]['total_price'] * active_stocks
-                        update_query = "update portfolio set active_stocks = {}, total_price = {} , time = CURRENT_TIMESTAMP where strategy_name = 'ema_rsi_camarilla' and ticker = '{}'".format(active_stocks, total_price, data['ticker']);
-                        c.execute(update_query)
-                    else:
-                        print("Skipping sell for ticker: {} as we already hold no active stocks. portfolio details: {}".format(data['ticker'],portfolio_df))                                      
-                
-
-            except Exception as e:
-                print("db error {}".format(e))
-            try:
-                db.commit()
-            except:
-                db.rollback()  
-                
-                
-                
                 
     
 def websocket_con(tickers):
@@ -248,6 +290,14 @@ time.sleep(3)
 
 
 
+'''
+Ping to healthchecks.io for  monitoring
+'''
+try:
+    requests.get("https://hc-ping.com/5b26f911-a5b7-4876-a005-20722be58e74", timeout=10)
+except requests.RequestException as e:
+    # Log ping failure here...
+    print("Ping failed: %s" % e)
 
 
 
