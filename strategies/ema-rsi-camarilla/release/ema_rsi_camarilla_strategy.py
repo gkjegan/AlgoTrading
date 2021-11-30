@@ -175,7 +175,7 @@ class TradeApp(EWrapper, EClient):
             action = ""
             tech_indicator_msg = "Tech Indicator: bid - {}, ask-{}, ema-{}, rsi-{}, r3-{}, s3-{}".format(bid_price, ask_price, tech_indicator_data['ema'], tech_indicator_data['rsi'],tech_indicator_data['r3'],tech_indicator_data['s3'])
             print(tech_indicator_msg) 
-            if  tech_indicator_data['rsi'] <= 20 and ask_price > tech_indicator_data['ema'] and ask_price < tech_indicator_data['s3']:
+            if  tech_indicator_data['rsi'] <= 20 and ask_price > tech_indicator_data['ema'] and ask_price <= tech_indicator_data['s3']:
                 action = "BUY"
                 unit_price = ask_price
                 print("BUY SIGNAL:  RSI condition - {}, EMA condition - {}, Camarilla condition - {} ".format(tech_indicator_data['rsi'] <= 20 , ask_price > tech_indicator_data['ema'], ask_price < tech_indicator_data['s3'])) 

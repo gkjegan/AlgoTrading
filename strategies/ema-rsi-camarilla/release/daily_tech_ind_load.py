@@ -35,7 +35,7 @@ Ref: https://www.investopedia.com/terms/e/ema.asp
 def EMA(DF,a=200):
     """function to calculate EMA with default span of 200 days"""
     df = DF.copy()
-    df["EMA"]=df["close price"].ewm(span=a, min_periods=a).mean()
+    df["EMA"]=df["close price"].ewm(span=a, adjust=False, min_periods=a).mean()
     return df['EMA']
 
 
@@ -81,13 +81,15 @@ Ref: https://www.investopedia.com/terms/p/pivotpoint.asp
 def CAMARILLA_R3(DF):
     """function to calculate EMA with default span of 200 days"""
     df = DF.copy()
-    df["R3"]=df["close price"].shift(1) + ((df["high price"].shift(1) - df["low price"].shift(1)) * (1.1/4))
+    #df["R3"]=df["close price"].shift(1) + ((df["high price"].shift(1) - df["low price"].shift(1)) * (1.1/4))
+    df["R3"]=df["close price"] + ((df["high price"] - df["low price"]) * (1.1/4))
     return df['R3']
 
 def CAMARILLA_S3(DF):
     """function to calculate EMA with default span of 200 days"""
     df = DF.copy()
-    df["S3"]=df["close price"].shift(1) - ((df["high price"].shift(1) - df["low price"].shift(1)) * (1.1/4))
+    #df["S3"]=df["close price"].shift(1) - ((df["high price"].shift(1) - df["low price"].shift(1)) * (1.1/4))
+    df["S3"]=df["close price"] - ((df["high price"] - df["low price"]) * (1.1/4))    
     return df['S3']
 
 
@@ -105,6 +107,8 @@ we are getting 320 days to include weekends.
 
 #Connect to db and get all daily price
 db = sqlite3.connect('/Users/jegankarunakaran/AlgoTrading/code/AlgoTrading/db/ema_rsi_camarilla.db')
+#One time full table upload
+#query_daily_price_sql = '''SELECT * from DAILY_PRICE '''
 query_daily_price_sql = '''SELECT * from DAILY_PRICE where close_date >= date('now', '-320 days') '''
 result_df = pd.read_sql_query(query_daily_price_sql, db)
 result_dict = result_df.to_dict('records')
