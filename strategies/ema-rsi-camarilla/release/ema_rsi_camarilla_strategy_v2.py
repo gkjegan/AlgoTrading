@@ -322,13 +322,13 @@ class TradeApp(EWrapper, EClient):
                     
                     
                     #place intraday sell for R3
-                    trade_transaction_data['action'] = 'SELL'
-                    trade_transaction_data['unit_price'] = r3
-                    trade_transaction_data['total_price'] =  trade_transaction_data['quantity'] * trade_transaction_data['unit_price']                   
-                    app.placeOrder(self.nextValidOrderId, self.usTechStk(trade_transaction_data['ticker']), self.limitOrder(trade_transaction_data['action'],trade_transaction_data['quantity'],trade_transaction_data['unit_price'])) # EClient function to request contract details
-                    self.nextValidOrderId= self.nextValidOrderId+1
-                    time.sleep(10) # some latency added to ensure that the contract details request has been processed
-                    self.populate_trade_transaction(trade_transaction_data)
+                    #trade_transaction_data['action'] = 'SELL'
+                    #trade_transaction_data['unit_price'] = r3
+                    #trade_transaction_data['total_price'] =  trade_transaction_data['quantity'] * trade_transaction_data['unit_price']                   
+                    #app.placeOrder(self.nextValidOrderId, self.usTechStk(trade_transaction_data['ticker']), self.limitOrder(trade_transaction_data['action'],trade_transaction_data['quantity'],trade_transaction_data['unit_price'])) # EClient function to request contract details
+                    #self.nextValidOrderId= self.nextValidOrderId+1
+                    #time.sleep(10) # some latency added to ensure that the contract details request has been processed
+                    #self.populate_trade_transaction(trade_transaction_data)
                     
                     
                     #active_stocks = portfolio_df.iloc[0]['active_stocks']+trade_transaction_data['quantity']
@@ -378,7 +378,7 @@ Refer to nextValidId function the Trading App.
 
 '''
 app = TradeApp()
-app.connect(host='127.0.0.1', port=7497, clientId=2002) #port 4002 for ib gateway paper trading/7497 for TWS paper trading
+app.connect(host='127.0.0.1', port=4002, clientId=2002) #port 4002 for ib gateway paper trading/7497 for TWS paper trading
 con_thread = threading.Thread(target=websocket_con, args=(tickers,), daemon=True)
 con_thread.start()
 time.sleep(3) 

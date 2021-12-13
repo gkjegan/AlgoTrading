@@ -161,7 +161,7 @@ for key in data:
         try:
             #print(" ticker:", key, "Run Date:",index, "ema:", row['ema'],"rsi:", row['rsi'],"r3:", row['r3'],"s3:", row['s3'])
             vals = [key, dt.datetime.strptime(str(index), "%Y-%m-%d %H:%M:%S").date(), row['ema'], row['rsi'], row['r3'], row['s3']]
-            query = "INSERT INTO TECH_IND (ticker, run_date, ema, rsi, r3, s3) VALUES (?,?,?,?,?,?)"
+            query = "INSERT INTO TECH_IND (ticker, close_date, ema, rsi, r3, s3) VALUES (?,?,?,?,?,?)"
             c.execute(query,vals)
         except Exception as e:
             print("db error {}".format(e))

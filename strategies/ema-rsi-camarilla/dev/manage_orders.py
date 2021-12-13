@@ -9,18 +9,18 @@ Created on Tue Nov  9 15:00:47 2021
 from ibapi.client import EClient
 from ibapi.wrapper import EWrapper
 from ibapi.contract import Contract
-from ibapi.execution import ExecutionFilter, Execution
+from ibapi.execution import  Execution #, ExecutionFilter
 #from ibapi.commissionReport import CommissionReport
 import threading
-import sqlite3
+#import sqlite3
 from ibapi.order import Order
 from ibapi.order_state import OrderState
 import time
-import pandas as pd
-import datetime as dt
+#import pandas as pd
+#import datetime as dt
 #from uuid import uuid4
-import requests
-from decimal import *
+#import requests
+from decimal import Decimal
 
 
 tickers = ['MSFT', 'TSLA', 'FB', 'NVDA', 'JPM', 'V', 'JNJ', 'UNH', 'WMT', 'BAC', 'PG']
@@ -167,13 +167,13 @@ Refer to nextValidId function the Trading App.
 
 '''
 app = TradeApp()
-app.connect(host='127.0.0.1', port=4002, clientId=2002) #port 4002 for ib gateway paper trading/7497 for TWS paper trading
+app.connect(host='127.0.0.1', port=7497, clientId=2002) #port 4002 for ib gateway paper trading/7497 for TWS paper trading
 con_thread = threading.Thread(target=websocket_con, args=(tickers,), daemon=True)
 con_thread.start()
 time.sleep(3) 
 
 app.reqAllOpenOrders()
-#app.reqPositions()
+app.reqPositions()
 #app.reqExecutions(2002, ExecutionFilter())
 #app.reqGlobalCancel()
 
