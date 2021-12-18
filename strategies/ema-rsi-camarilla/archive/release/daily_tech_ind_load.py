@@ -21,7 +21,7 @@ EMA
 RSI
 and CAMARILLA (only R3 and S3)
 '''
-tickers = ['MSFT', 'TSLA', 'FB', 'NVDA', 'JPM', 'V', 'JNJ', 'UNH', 'WMT', 'BAC', 'PG']
+#tickers = ['MSFT', 'TSLA', 'FB', 'NVDA', 'JPM', 'V', 'JNJ', 'UNH', 'WMT', 'BAC', 'PG']
 #APPL stock is not available, so removed
 #tickers = ["FB"]
 
@@ -155,7 +155,8 @@ c = db.cursor()
 for key in data:
     data[key]['close date']= pd.to_datetime(data[key]['close date'])
     data[key].set_index("close date",inplace=True)
-    data_to_insert = data[key].last('5D')
+    data_to_insert = data[key].last('10D')
+    print(data_to_insert)
     for index, row in data_to_insert.iterrows():
         #print(row)
         try:

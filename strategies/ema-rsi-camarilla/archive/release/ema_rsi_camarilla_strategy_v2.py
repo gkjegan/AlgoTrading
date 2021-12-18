@@ -310,6 +310,10 @@ class TradeApp(EWrapper, EClient):
             trade_transaction_data['tech_indicator'] = tech_indicator
             trade_transaction_data['unit_price'] = unit_price
             print('trade_transaction_data: {} , portfolio_df: {}'.format(trade_transaction_data, portfolio_df))
+            
+            
+            
+            
             if trade_transaction_data['action'] == 'BUY':
                 if not portfolio_df.empty and portfolio_df.iloc[0]['active_stocks'] < 2:
                     print("Buy order placed for trade_transaction_data = {}".format(trade_transaction_data))

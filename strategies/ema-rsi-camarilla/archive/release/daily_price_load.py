@@ -124,7 +124,7 @@ def websocket_con():
     app.run()
 
 app = TradeApp()
-app.connect(host='127.0.0.1', port=4002, clientId=1001) #port 4002 for ib gateway paper trading/7497 for TWS paper trading
+app.connect(host='127.0.0.1', port=4001, clientId=1001) #port 4002 for ib gateway paper trading/7497 for TWS paper trading
 con_thread = threading.Thread(target=websocket_con, daemon=True)
 con_thread.start()
 time.sleep(1) # some latency added to ensure that the connection is established
