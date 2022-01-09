@@ -86,3 +86,37 @@ class portfolio:
             db.commit()
         except:
             db.rollback()  
+
+
+    def resetPortfolio(self, tickers):
+        try:
+            c = db.cursor()
+            for ticker in tickers:
+                update_query = "update portfolio set active_stocks = {}, total_price = {} , time = CURRENT_TIMESTAMP where strategy_name = 'ema_rsi_camarilla' and ticker = '{}'".format(0, 0, ticker);
+                print(update_query)
+                c.execute(update_query)
+        except Exception as e:
+            print("db error {}".format(e))
+        try:
+            db.commit()
+        except:
+            db.rollback()
+        
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            

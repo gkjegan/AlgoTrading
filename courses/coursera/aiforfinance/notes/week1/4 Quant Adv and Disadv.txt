@@ -1,0 +1,49 @@
+This section, we will identify
+some of the key strengths and weaknesses of quantitative strategies. Markets are often driven as much
+by emotions as by fundamentals. While it is sometimes important
+to factor in market sentiment, it is usually not a good idea to let your
+own emotions color your trading decisions. In my experience, trader sentiment
+swing wildly between greed and fear, blinding them to what is
+really going on in the market. Greed and its enabler egomania often cause
+a trader to refuse to take profits and rides huge winners all
+the way down to huge losses. Fear and its enabler self-doubt often
+cause traders to liquidate positions due to short-term losses that would
+have eventually turned into big winners. Once a strategy is agreed and the rules
+are in place to control changes to that strategy is more likely that the careful
+reasoning used to construct the strategy will prevail over the short-term
+desires to tweak or modify it. This makes risk management clear and
+also keeps the emotion out. Correctly formulated strategies are always
+optimal from a mathematical perspective. This optimality may prove illusory, but it still represents the collective
+wisdom of a strategy as developers and is a big improvement over
+the strategies based on sentiment. Quant trading despite being rules-based,
+emotion free, mathematically optimal
+is still quite risky. Small firms blow up all the time and
+see even some of the biggest firms like Knight Capital have flamed out
+in less than an hour of trading. Knight was the largest trader in
+US equities with a market share of around 17% on both the New York
+Stock Exchange and the NASDAQ. Knight's Electronic Trading Group
+managed an average daily volume of 3.3 billion trades trading
+over 21 billion daily and yet due to a computer glitch,
+Knight accidentally bought 7 billion dollars of equities in 45 minutes with no
+customer orders or funds to pay for them. They tried to cancel the orders but
+failed and was forced to sell the stocks
+at a $478 million loss. With this loss of trading capital,
+it had to accept a capital infusion from a rival firm who eventually
+ended up taking it over. Quant trading already dominates
+the market, it's extremely competitive. That said, it is the only area of trading
+that is growing and anyone who wants to develop or trade strategies
+should invest some of their time and effort on their coding and
+statistical skills. Quant strategies are only optimal within
+the context of their assumptions, made during their construction. This is a weakness, but it is also
+true of any strategy that attempts to predict a random variable
+such as equity prices. Profits are never certain
+in a risky strategy. If you want a guaranteed return,
+you should be a Buy and Hold investor in government bonds, most
+of which yielded negative real return. Lastly, markets are always changing,
+uptrending markets and assets suddenly reverse to downtrend which
+can cause correlations to reverse and volatility to spike upward. Overall though, the rapid expansion
+of quantitative trading shows that the opportunities outweigh the challenges. I hope as we work our way through this
+course, you will gain a functional understanding of the real world
+applications of Quant trading techniques. And also how machine learning and AI can
+help you leverage your development efforts and make your strategies more
+effective and profitable.

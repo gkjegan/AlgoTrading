@@ -1,0 +1,76 @@
+When you design and implement a backtest,
+it is important that you have a clear idea of what you want
+the backtest to accomplish. Your goal at the initial development stage
+is to set up a strategy pipeline and then filter out any strategies that don't
+meet your minimum performance criteria. Backtesting provides an efficient
+filtration mechanism so that you can eliminate week strategies
+that have a low risk adjusted return, or that have large anticipated drawdowns. You can use Sharpe ratios and Calmar ratios to rank your strategies,
+but keep in mind that risk and drawdown may be higher when move
+to a live trading strategy. Backtesting also allows
+you to test your model and fine-tune without risking trading capital. It helps you to identify
+microstructure issues early on, such as transactions costs, liquidity,
+and latency and data in order execution. Backtesting provides a framework in
+which you can optimize your strategy by modifying the quantities or values of the
+parameters associated with that strategy, and then recalculating its performance. Unfortunately, by optimizing your
+strategy, you run the risk of introducing overfitting bias into your model,
+which we'll talk about a bit later. So far, you've gotten a good idea of
+all of the benefits you can get from backtesting your model. Now, we will talk about
+some of the traps that many quantitative strategy developers fall
+into when backtesting their models. Models depend on correlations, which can
+vary or even reverse given enough time. Backtesting takes the correlation
+in the test data series as given. At a minimum,
+you should measure the value and variability of critical correlations
+over your entire data set. Data can be incomplete or
+contained fictitious outliers. You need to carefully cleanse your
+data before using it in a backtest. You also need to decide
+if the frequency of data that you have available is
+sufficient to test your strategy. For long-term strategies, open, high,
+low and close data may be sufficient. For high-frequency strategies,
+you need tick by tick data and visibility into the order book. Slippage is the difference
+between the last market bid or offer in the price you actually buy or
+sell at. Your model needs to factor in
+getting somewhat worse prices, especially in volatile markets
+when using market orders. You also need to model
+realistic market impact costs. It's not realistic to assume that
+you'll be transacting at the midpoint between the bid and the ask price. This is especially critical in markets
+with limited or variable liquidity. It is easy to allow biases to weaken
+your backtesting model and strategy. One bias that we've already mentioned
+is overfitting your model to a limited data set. This makes your model perfect for
+the backtest data, but also very likely to have completely different
+performance when tested in live market. Look-ahead bias sneaks into your model
+whenever you inadvertently include data outside of your testing window. This can happen when you tweak factors and
+correlations to reflect more recent data. Survivorship bias occurs when you
+use data sets that don't include the stocks of companies that have
+either gone out of business or been merged into another company. This is when you are backtesting your
+strategy on a number of different stocks that have all survived to the present, and
+so represent a positively skewed sample. Drawdown tolerance bias is a common
+feature of discretionary trading but is mostly ignored for
+quantitative trading. When you create a backtest that covers
+a period of five years or more, it's easy to look at an upward trending
+equity or equity index price curve. Calculate the return, Sharpe ratio and
+drawdown characteristics and be completely comfortable
+with the risk you're taking. The strategy might have
+a maximum drawdown of 25% and a maximum drawdown
+duration of three months. This would not be unusual for
+a momentum strategy and it's easy to convince yourself that you can tolerate these losses because
+the return potential is so good. In practice, a drawdown of 25%
+extended over three months would raise some serious doubts in
+your mind about the strategy. Your funders would probably intervene and
+pressure you to end the strategy and take a loss. Now we look at the difference between
+backtest you create in the development phase and those that you used to retest
+strategies that are candidates for full implementation. You design development backtesters to
+help create many preliminary models. So strategies with varying sets of
+parameters can be tested quickly and either discarded or qualified for
+a more thorough implementation backtests. They are used to identify
+statistical relationships and market behaviors that have the potential
+to be exploited in a quant strategy. One big weakness is they tend to
+give inflated performance, and so you don't consider the full
+cost of strategies. You can use our pandas to
+code development testers and it's generally simpler to code these,
+than decoded implementation backtester. Implementation backtesters are more
+difficult to code because they simulate all aspects of
+a strategy going live. Implementation backtesters require a data
+interface to handle both historic and live market data, a quant strategy
+that generates signals to a portfolio manager that then creates orders and
+measures performance. And then an order execution handler that
+sends orders and receives confirmations.

@@ -1,0 +1,53 @@
+In this section, we are
+going to see how to select the right model for a forecasting job given
+the data and the problem. We will revisit
+machine learning in greater depth in each of
+the modules in this course. For now, just remember
+that we wanted to use a computer using
+examples, not put rules. Any business application
+where you have those long switch or case
+statements or if-then-else logic manually coded
+and you have a history of good labeled data is a possible application
+for machine learning. So if you have a structured
+dataset that you think is a good use case
+for machine learning, the next step is to find a model type that is
+appropriate for your use case. Out of all the models out there, what's a good place for you to start for simple prototyping? Here's a decision tree
+to help guide us. We'll walk through
+each of the branches. The first question is: What kind of activity
+you're engaging in? Is there a right
+answer or grant to that exists in your
+historical data that you want to model? You'll see later in BigQuery
+ML that you can just specify model type equal linear regression and BigQuery
+handles the rest for you. What didn't you see here
+that you may have heard of? There are many different
+types of models out there that you may not
+see on this chart. More complex models like
+deep neural networks, decision trees, random forests are also available for modeling. You'll even build a
+custom model using neural architecture
+search to build a deep neural network
+later in this course without using any
+code with AutoML. It's my recommendation
+that even if you know how to build advanced
+models that you start with simpler ones first because they often train
+faster and give you an indication of whether or not ML is a viable solution
+for your problem. Here's a quick quiz to test your knowledge
+of different models to use different problems
+in your business. Let's say you want to predict the e-commerce sales figures
+for the next quarter. Which one of the
+following will you use? One, forecasting; two,
+classification; three, recommendation; four,
+unsupervised learning; or five, all of the above. Can you tell? The
+correct answer is one, the forecasting method using a linear regression or
+other regression models. Now, let's look at
+another question. What model would you use if
+your problem was to predict whether a user will buy
+or not during a visit? The choices are: one, forecasting; two,
+classification; three, recommendations; four,
+unsupervised learning; and finally five,
+all of the above. What would your choice be? The correct answer is two, classification since we are interested in finding
+the two categories or classes in which
+the response will fall under to buy or not to buy. In addition, you
+might want to use a model such as logistic
+regression which, even though it has the word
+regression in its name, is actually a
+classification algorithm. I hope this was helpful.

@@ -1,0 +1,7 @@
+In this lab, we will be creating regression model
+using Big Query Machine Learning. The objectives in the lab are to
+teach you about the following. First, we need to understand
+the model objective. Predict stock prices of Apple five days
+into the future using past values. So in this lab, we are going to learn one, how to import data into Big Query, two,
+how to add some features to the data. Three, how to build a model
+using Big Query ML, and four, how to evaluate the results.

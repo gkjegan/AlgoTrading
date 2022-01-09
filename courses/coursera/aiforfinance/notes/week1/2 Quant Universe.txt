@@ -1,0 +1,28 @@
+In this section, we
+will talk briefly about the different parts
+of the quant universe. Quantitative trading is a family of analytical methods and execution strategies that
+comprise the quant universe. Quantitative trading is gradually taking over the world and now counts for almost 90 percent of trading volume overall. I began my trading career about 20 years ago in a proprietary trading group
+within a global bank. The group traded
+options, forwards, and futures based on foreign exchange rates
+and interest rates. It was separate from
+the bank's risk management function which use the same derivatives
+but only to hedge the risk and the bank's lending
+and investment portfolio. Initially, it was my
+responsibility to create pricing and risk management models
+within the trading group. My primary focus was
+to create a model of the behavior volatility in exchange rates and
+short-term interest rates. A successful quantitative
+strategy depends on good quality
+data which you can analyze statistically to uncover potentially profitable
+patterns and behaviors. Algorithmic trading is a type
+of quant trading that uses pre-specified machine
+executable instructions to determine the size
+and timing of trades based on a quantitative model of an asset's price behavior. Over 70 percent of US trading
+volume is algorithmic. Most of this volume is high-frequency trading
+which we will discuss next. High-frequency trading is
+a subset of algo trading, focuses on the rapid execution of short term trading strategies at the millisecond and
+sub-millisecond timescale. We base or high-frequency
+trading strategies on quant models and market
+micro-structure features such as liquidity and latency
+which we will talk about in a later section covering
+arbitrage strategies.

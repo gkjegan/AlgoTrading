@@ -46,10 +46,10 @@ class TradeApp(EWrapper, EClient):
         #Cancel all open orders
         self.reqGlobalCancel()
         time.sleep(5)
-        
+        #portfolio.resetPortfolio(tickers)
         #Get all filled orders or positions and update portfolio
         self.reqPositions()
-        time.sleep(5)
+        time.sleep(20)
         #now go for buy or sell        
         self.start()
 
@@ -62,13 +62,20 @@ class TradeApp(EWrapper, EClient):
               "Position:", position, "Avg cost:", avgCost)  
         portfolio.upsertPortfolio(contract.symbol, position, avgCost) 
 
+    #Used for missed daily run. Running this on day 2
+    def prev_weekday(self, adate):
+        adate -= dt.timedelta(days=1)
+        while adate.weekday() > 4: # Mon-Fri are 0-4
+            adate -= dt.timedelta(days=1)
+        return adate
 
     def start(self):       
         for ticker in tickers:
+            print(ticker)
             today = dt.datetime.today().date()
-            #today -= dt.timedelta(days=1)
+            prior_weekday = self.prev_weekday(dt.datetime.today().date())
             daily_df = dPrice.getByTickerEQdate(ticker, today)
-            print(daily_df) 
+            print("daily_df - {}".format(daily_df)) 
             for index, row in daily_df.iterrows():
                 print(row['close_date'], row['low_price'], row['high_price']) 
                 close_date = dt.datetime.strptime(row['close_date'], "%Y-%m-%d").date()
@@ -78,10 +85,9 @@ class TradeApp(EWrapper, EClient):
                 strategy_result_dict = emaRsiCamarillaStrategy.strategy_ema_rsi_cam( ticker, close_date)
                 
                 #Based on strategy action, start backtesting to place order
-                self.placeOrder(ticker,close_date , row['low_price'],row['high_price'],strategy_result_dict)
+                self.callBuyOrSell(ticker,close_date , row['low_price'],row['high_price'],strategy_result_dict)
             
-            time.sleep(10)    
-            app.disconnect()
+            time.sleep(10)
 
     #creating object of the Contract class - will be used as a parameter for other function calls
     def usTechStk(self, symbol,sec_type="STK",currency="USD",exchange="ISLAND"):
@@ -102,7 +108,7 @@ class TradeApp(EWrapper, EClient):
         return order    
 
 
-    def placeOrder(self, ticker, close_date, low_price, high_price, strategy_result_dict):
+    def callBuyOrSell(self, ticker, close_date, low_price, high_price, strategy_result_dict):
         try:
 
             #create trade_transaction_data
@@ -155,8 +161,8 @@ class TradeApp(EWrapper, EClient):
                             print('Sell skipped. profit margin {} is less than 2%'.format(profit_margin))
                     else:
                         print('Sell skipped. Unit price {} is less than average_cost  {}'.format(trade_transaction_data['unit_price'], average_cost))
-            else:
-                print("Skipping sell for ticker: {} as we already hold no active stocks. portfolio details: {}".format(trade_transaction_data['ticker'],portfolio_df))  
+                else:
+                    print("Skipping sell for ticker: {} as we already hold no active stocks. portfolio details: {}".format(trade_transaction_data['ticker'],portfolio_df))  
         
         except Exception as e:
             print("error {}".format(e))
@@ -178,7 +184,7 @@ Refer to nextValidId function the Trading App.
 
 '''
 app = TradeApp()
-app.connect(host='127.0.0.1', port=4001, clientId=2002) #port 4002 for ib gateway paper trading/7497 for TWS paper trading
+app.connect(host='127.0.0.1', port=4001, clientId=2002) #port 4002 for ib gateway paper trading/7497 for TWS paper trading/4001/7496 for TWS live
 con_thread = threading.Thread(target=websocket_con, args=(tickers,), daemon=True)
 con_thread.start()
 time.sleep(3) 

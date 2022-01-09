@@ -1,0 +1,112 @@
+In this section, we will
+explore the design and implementation of quant
+trading strategies. Quant strategies are a
+precise set of rules that generate orders and manage the risk of your
+current position. Rules can be quite complex
+and are a product of systematic statistical
+analysis of an asset's historical price data. You can use this analysis to uncover hidden patterns
+and behaviors in the market for a particular asset or group of assets
+such as an index. Strategies range
+from low-frequency, at least by trading
+standards, to high-frequency. You must implement high-frequency
+trading strategies with software and market
+interfaces that can handle sub-millisecond order
+creation and submission. Quant strategies
+are also a type of forecasting method that
+attempts to predict the future value of a stock or other instrument where
+the direction of a price spread between
+two instruments. These forecasts are based on an observed price response
+to factors that you have identified as
+statistically significant in predicting changes in
+an instrument's price. Mean reversion strategies
+depend on the stability or stationarity of an asset's price or spread relative
+to another asset. When the price risk
+spread gets too high, it becomes more likely
+that it will decrease, and so revert to its long-term
+mean or neutral value. When the price risk
+spread gets too low, it becomes more likely
+that it will increase, and again revert to its mean. Correlation is a
+measure of how well two variables move
+together over time. Correlation coefficients
+range from negative one or perfect negative
+correlation to zero, or no correlation to one which is perfect
+positive correlation. Positive correlation means that the variables move in tandem in the same direction while
+negative correlation means that they move in tandem but
+in opposite directions. When you look for a
+correlation in a price series, you normalize the prices so that each starts at 100 percent. The change in prices is then the cumulative return
+on each asset. Notice how the returns in
+this example track closely, and then diverge by
+about 10 percent, and then by about 15 percent. These two assets are correlated, but the difference between
+their means is not stable. Co-integration tasks
+do not measure how well two variables
+move together, but rather whether the difference between their means
+remains constant. Often variables with
+high correlation will also be co-integrated
+and vice versa, but this isn't always the case. In contrast to correlation when you test for co-integration, use prices rather than returns since you're more
+interested in the trend between the variable's means over time than in the individual
+price movements. In momentum or
+trend-following strategies, you're just buying assets that
+had been past winners and, selling assets that
+had been past losers. This is the opposite of a
+mean reversion strategy where you sell winners
+and buyback losers. Momentum strategies
+has been particularly popular over the last five years, and they outperformed
+the S&P 500 by a wide margin as you can
+see from this chart, which compares the performance of the iShare momentum
+ETF to the S&P. We will find possible
+explanations for this outperformance in both the underreaction and overreaction of prices to
+new market information. Underreaction means
+it takes time for the market to fully
+incorporate new information, and so the positive
+or negative effect is spread out over a
+longer time period. Overreaction means that
+the market tends to feed on its own positive
+or negative reaction. The market over rewards companies
+that release good news, and over punishes those
+that release bad news. You can also argue that it is inherently riskier
+to continue buying stocks after up-moves or
+selling them after down-moves. So momentum investors should get an extra return for
+taking this risk. This argument, however,
+is undercut by the fact that iShares Momentum ETF has a three-year beta of 0.91
+versus 1.0 for the S&P 500. It is weakly supported however by the volatility of the momentum ETF being 12.5 percent versus
+12.1 percent for the S&P. I think that the last
+argument is the strongest. Investors believe that
+momentum strategies will outperform the market, will cause them to
+bid up the prices of momentum stocks creating a
+positive reinforcement cycle. Many traders believe
+that momentum stocks and also quality
+stocks are overvalued, and that this positive
+reinforcement cycle will unwind in a sharp sell-off of the stocks favored
+by these strategies. Market micro-structure
+is a combination of the physical trading
+infrastructure used by a trading platform
+and its participants, the platform's trading rules, and the behaviors, and trading patterns of its participants. The strategies used and abused
+by high-frequency traders had been described extensively in the media and books
+such as Flash Boys. High-frequency traders
+who attempt to capture an arbitrage profit by
+taking advantage of flaws and anomalies in this infrastructure that exists for a few milliseconds or less. They also seek to identify
+and exploit patterns in the trading behavior of their major competitors
+in each market. These patterns are often identified using
+game theory models. Equally important
+is their ability to detect and profit
+from the execution of large orders that have
+been broken up and hidden using an order
+execution strategy. Let's say a firm
+wants to purchase an unusually large
+quantity of stock. Now use an execution
+strategy that enters the trades in a
+way that is supposed to break up and hide the order but which unintentionally
+signals search strategy. Sophisticated traders
+have their own algorithms which are able to detect
+these stealth orders. They're able to use
+this information to jump in front of
+the large orders, and profit by driving
+prices up ahead of a buy order or down
+ahead of a sell order. Spoofing is where traders
+attempt to mislead other traders by submitting
+orders to the market, order book that they
+don't intend to execute. Say a trading group needs to sell a stock and wants to
+get a better price. They can enter temporary
+large-sized buy orders below the current market
+bid to encourage other bidders to pay higher
+prices for the stock.

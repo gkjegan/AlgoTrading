@@ -1,0 +1,32 @@
+In this section,
+we will see how to use one of Google Cloud's
+most popular tools called BigQuery and this latest
+edition the machine learning ML to make predictions
+of the future. You know that building ML models can be very time-intensive. You must first export
+small amounts of data from BigQuery into Pandas
+and then Datalab, you then transform the data
+to be used in TensorFlow. You build a model in TensorFlow and train
+it locally on a VM. Doing that with the small model then requires that
+you go back and get more data to create new features and
+improve performance. Doing this repeatedly is hard. So you stop after
+a few iterations. BigQuery ML enables users
+to create and execute machine learning
+models in BigQuery using standard SQL queries. BigQuery ML democratizes
+machine learning by enabling SQL
+practitioners to build models using existing
+SQL tools and skills. BigQuery ML increases
+development speed by eliminating the
+need to move data. Let's see in the next
+slide how it does that. In four major steps,
+it looks like this. In step 1, you create a SQL query to extract
+training data from BigQuery. In step 2, you create a model specifying model
+type also within BigQuery. Three, you evaluate your model and verify that it meets
+your requirements. Finally in step 4, you predict using that model on data extracted from BigQuery. Voila, you have now completed your first model in BigQuery
+using four simple steps. If you are explaining
+BigQuery ML to others, I often just lists
+these main points. To recap, BigQuery
+ML allows you to; one, write machine learning
+models with SQL; two, experiment and
+iterate right where your data lives in BigQuery; three, build classification, binary and multi-class
+and forecasting models; four, know machine learning? Inspect model weights and
+adjust hyperparameters too.

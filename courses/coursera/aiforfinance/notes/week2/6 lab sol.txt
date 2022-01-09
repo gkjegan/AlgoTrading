@@ -1,0 +1,177 @@
+In this lab, we are going
+to use BigQuery to build a linear regression model on around 10 years worth
+of Apple stock data. There are several
+objectives for this lab. First, we're going to
+import the stock data stored in Google Cloud
+Storage into BigQuery. Then, we're going to use
+this data to actually build and evaluate a regression
+model in BigQuery. Lets get started. When you
+first boot up the lab, you'll land in the GCP
+Console learning page. I'd like to find whatever service I'm interested in by just navigating to it in the
+navigation bar on the left here. This BigQuery is stored
+under the Big Data header. Go ahead and click on that.
+Now we are in BigQuery. So the Apple stock data lives
+in Google Cloud Storage. To get into BigQuery, we first have to create
+a place for it to live. Let's go ahead and do that by creating a dataset and the table. To create a dataset, you first-click on your
+project name here, gives you the option
+to create a dataset. We'll leave most of the defaults. The only thing we have
+to provided is ID. In this case, we'll call
+it ai4f, ai for finance. We'll click on "Create dataset". In case that's created,
+you'll see it here. Then next we want
+to create table. So if I you click on this
+plus icon, create a table, and the main thing here is our source is going to
+be Google Cloud Storage. So click on that, and then
+we have to provide a path to the GCS bucket where our
+Apple stock data lives. So go ahead and do that. Again we're going to leave
+the defaults pretty much, except we do have to provide
+our table with a name, we'll call it AAPL10Y since we have about 10
+years worth of data. Then the only other thing
+is since our schema is specified in the CSV file, we'll want to go and have
+BigQuery auto detect that. So check this icon here. We'll click on "Create table''. Then you'll see
+after a few moments that your table here is
+listed under your dataset, which is listed under
+your project name. You can view the schema
+of the table that we created by selecting it
+from the drop-down menu. So here you see field
+names for date, close, volume, open,
+high, and low. Also, I'd like to point out that everything that we're
+doing here using the BigQuery Graphical
+User Interface can also be done using Command
+Line arguments. Sometimes those are
+really convenient. So I like to start by viewing
+the first several rows of whatever tables I'm
+going to be working with just to get a better
+feel for what's in them. So we'll go ahead and do that. Execute the query.
+So it looks good. Let's go ahead and write some
+more complicated queries. So in the lab, we're asked
+to find the minimum and maximum of the dates
+in the dataset, let's go ahead and write
+the query for that. So this is pretty
+straightforward. All we need, so note the date, it'll contains the
+information we need, and then we'll just apply the minimum and the
+maximum functions. The query looks like, we'll run it, then
+here's the result. So the minimum day is June 3rd of 2009 and the maximum date is
+June 3rd of 2019. So as expected, there's a 10 year separation between the minimum and
+the maximum dates. Now, for more challenging query, we're asked to calculate the average closing share
+price for each year. Just go ahead and
+compose new query. Now, to do this in SQL, we need to aggregate our data by year using the
+group by statement. Since we're grouping,
+we need to apply an aggregation operation
+in the select statement. Since we're interested in
+the average closing price, that's aggregation we'll use. In our query, we'll also order the results by year in descending order that's achieved using
+the order by statement. We'll go ahead and run our query, and we have the results,
+no surprises there. Finally, we're asked to
+answer the question, which five dates correspond to the greatest percent
+increase in Apple stock? So we'll go ahead
+and post any query. So to find the answer, we need
+to write a query to output the percent increase in the
+previous day's closing price. One extremely useful SQL
+function that will help us is the lag function
+that you see here. So basically, the lag
+function can be used to reference previous rows
+of data in your table. We need the previous
+day's closing price, and so the correct syntax
+here is lag close, and this one signifies
+that we just want to look one day before. We'll tell lag
+function how to order our data in the over clause. Here we order by date. Lag function is really powerful. You can actually apply
+the lag function to groupings in your data
+using the partition clause. I encourage you to check
+out BigQuery's lag function documentation to
+find out how to do this. So we'll just take
+the current rows closing price and divide it by the previous day's
+closing price to get the percent increase
+and multiply it by 100. We'll then order by these changes using the order by clause here, and we'll just limit it
+to the top five results. We'll go ahead and run the query, and here we have the results. So it seems like the
+greatest percent change was around nine percent or so
+occurring in the year 2012. Now that we've explored
+our data a little bit, move on to the most
+exciting part of this lab where we actually
+build a regression model in BigQuery to predict the closing price of Apple
+stock on any given day. So our model will be
+really simple and that only has two
+features as input. The first feature will be the previous day's closing price. That makes sense to me. The second feature
+will be something we call a three-day trend. A three-day trend variable for any given row looks at the previous four days
+is closing costs. If the closing price on a day is greater than the closing price on
+the previous day, then we assign that
+day a positive one, otherwise, that date gets
+assigned a negative one. Now, if the majority
+in the past three days consists of positive ones, then the three-day trend
+is set to positive one, otherwise it sets negative one. So let's go ahead and look at the query that will get us the features that
+we're interested in. We'll go ahead and compose
+new query and we'll paste in the query from the
+Qwiklabs documentation. So to get at the
+features we want, we're going to use
+three sub tables and we are also going
+to make heavy use of the lag function that
+we just described. So in this first sub table, we extract the closing price
+directly which we'll use as one of our features
+and then we apply the lag function four times. The first one we look
+one day before and the second lag function we go
+two days before, and so on. We need to look four
+days before so that we can create that trend
+three-day variable. In the next sub table that
+we call raw_plus_trend, we're taking the output
+of the raw table and for each of the previous
+four days' closing prices, we're looking to see
+if the closing price increased or decreased. We create three new columns and the first column min_1_trend, we assign positive one if the closing price increase and negative one if it decreased. Min_2_trend does the same thing, but it looks two days back, and min_3_trend looks
+three days back. Finally, in the ml_data table, we select everything we'll
+need to create our ML model. So close is what we're
+trying to predict. Min_1_close is the previous
+day's closing price, and here in this if statement, we're basically aggregating the previous three data trends. So we're using the if statement as kind of a max function. If at least two of
+the previous days have increased in close value, then we set this to
+positive one, otherwise, it outputs negative one for
+the trend_3_day column. Rather than just
+running this query, we're actually going to
+save the results to a table so that we could use as
+input to our ML model. To do that, we click on
+"More", "Query settings", and we'll leave most
+of the defaults except for this destination we'll set a destination
+table for query results, and we'll save it to the same
+dataset we created earlier. We'll call the table
+in which we'll store the output model data
+and we click "Save", and then we execute query. We see here that the
+table has been created, and we could just
+scroll through some of the roles to look
+for correctness. Everything looks good.
+To build ML model, we'll go ahead and
+compose new query. So here's the syntax. The first line tells BigQuery
+that we want to call our model AAPL_model and that we want to save it
+to our dataset ai4f. The next few lines
+describes some of the parameters of
+the model namely, we want a linear
+regression model. You specify the
+continuous variable we're trying to predict which
+in this case it's close. We also specify some parameters for how we want to
+validate the model. We don't want to
+validate our model in the same data we used
+to train our model. For validation, we tell BigQuery to split
+our data sequentially. In essence, we basically
+have a time series. We also tell BigQuery to use around 30 percent of the data
+for validation purposes. After we tell BigQuery about the type of model
+we want to build, we show it the data
+we want to use. We already created this
+data and stored it in the table model_data. So here we're just plucking out the features and target variable. We'll go ahead and
+have BigQuery query this model by
+executing the query. Could take several seconds here. When the model is
+done, you'll see it here under your dataset. To see some evaluation
+metrics you can enter the following query. Since we train a
+regression model, the main metric to look at
+is the mean squared error. Know your results may
+vary a little bit. Mean squared error takes
+the difference between your model's predictions
+and true values, squares them, and then
+adds them all up. Based on this mean
+squared error value, our model is not very good. Then again, what do you
+expect when we only use a two simple features as input to our Machine
+Learning model? Finally, now that we
+have a trained ML model, we want to make some
+predictions with it. Let's compose a new query
+where we have our model predict closing prices
+for all dates in 2019. Here's the syntax. Run the query, and as just as a sanity check, we expect the
+predicted close values to be similar to the
+previous days values. We can visually inspect this by scrolling through some
+of the predictions. Sure enough, that's the case, but this doesn't mean
+that ML model is any good as we saw by looking
+at the mean squared error. It can be improved quite a bit by creating some more
+sophisticated features. Go ahead and try
+to create some of these yourself. Be creative.

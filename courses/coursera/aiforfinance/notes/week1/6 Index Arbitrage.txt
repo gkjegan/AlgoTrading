@@ -1,0 +1,28 @@
+In this section, we
+will explore one of the most popular Arb
+strategies: Index Arbitrage. The original exchange traded funds or ETFs were created to mirror the most heavily
+traded indexes: the S&P 500, Nasdaq 100, and the Dow 30. As volume of these
+ETFs increased and passive investing
+became more popular, the number of ETFs increased to more than 6,000 worldwide by 2018 of which 3,500
+were equity-based. ETFs currently manage over
+$5 trillion of assets and are traded actively by both institutional
+and retail traders. Index Arbitrage is a
+high-frequency strategy. Indexes are composed of multiple
+stocks or bonds each of which is traded separately
+or as part of an index ETF. Traders need to know
+the current bid, offer, and size of orders
+for each index component, and also the weighting of each component in each
+index in order to know exactly what price they can buy and sell the
+index in the market. They then compare that with
+the best bid and offer for the index ETF and see if there's an arbitrage opportunity. For example, you
+could buy shares of all 100 components
+of the Nasdaq 100 in exactly the right
+proportions and then sell shares of the QQQ ETF. This may seem like a lot of
+effort for a small profit, but it's the main business of lead market-makers for the
+QQQ who are constantly converting mirror
+portfolios into QQQ shares and then converting QQQ shares into their component's stocks. Index Arbitrage also has high-infrastructure
+costs due to its need for real-time market data feeds, high-speed computers, and co-location with
+exchange servers. Co-location reduces the time between when your order
+execution program receives market data and the exchange receives
+your trading orders. This is called reducing
+data and execution latency.

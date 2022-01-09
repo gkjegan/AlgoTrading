@@ -1,0 +1,81 @@
+Next, we will look at some
+of the practical issues and opportunities that
+Stat Arb traders face. Stat Arb is very competitive and it's hard for new
+entrants to compete in areas like index arbitrage
+especially in major markets. Fortunately, there are
+lots of opportunities in smaller markets and less liquid
+stocks and other assets. These markets are less efficient, and so they offer more
+opportunities to trade profitably but on
+a smaller scale. Stat Arb profits
+are eaten away by a range of costs
+including trading, clearing, and exchange fees. These are especially heavy
+for high-frequency traders. There are also
+risk-based charges which factor in the cost of
+trading capital being tied up in collateral and margin for derivatives
+positions in short sales. Added to this are the cost to borrow assets for short sales, especially when there's
+very high demand and limited supply as is the case when several hedge
+funds decide to short the same stock of a
+closely held company. Think Beyond Meat or Lyft. This is referred to as the
+asset being on special, where the stock lender charges you as much as 60 percent
+to borrow the stock. This means you put
+up collateral of $100 and receive $40 back
+at the end of the year. Obviously, this is not a good strategy for
+more than a few weeks. Lastly, there's a market
+impact cost of trading. Lower frequency arbitrators
+usually sell at the bid price and they
+buy at the ask price. So they lose about half of that bid-ask spread on
+each transaction. This is paying for liquidity
+or being a liquidity taker rather than a liquidity provider such as a
+market-making firm. Arb trading firms
+consume lots of data. Initially, a firm must
+purchase and cleanse historical data that it will use as the input to
+models and strategies. Market feeds vary in
+price depending on the level of detail
+needed by the firm. Daily open, high-low, and closed data is essentially free. High frequency data
+is more costly, but is essential for most
+quantitative strategies. High-frequency traders also need to have full visibility into each asset's order
+book and tick by tick data on the timing
+and size of transactions. This type of feed can
+be quite expensive, especially if a firm trades in several markets
+at the same time. Remember my earlier
+observation that the most promising areas
+for traders were smaller, less liquid stocks and markets? This comes with a big caveat. In order to profit
+from these stocks, you need to actually
+be able to trade them. The reality is that
+liquidity is heavily concentrated in the
+largest cap stocks in the largest markets. This is part of why
+these markets offer fewer mispricings and
+other inefficiencies. When you design a
+trading strategy, you need to take into account how much trading
+actually takes place in the stock and what size of bid-ask spreads you will face
+if you decide to transact. These hurdles can make an
+otherwise profitable strategy. You're unexecutable
+or unprofitable. Another challenge
+is it's sometimes hard to borrow certain stocks. Recall our discussion of
+stocks being on special. In this case, you may
+not be able to find a stock lender when you
+want to shorten them. Also trading in stock
+may be halted due to pending news or simply because
+the market is not open. This can cause you
+to lose a lot of potential profit from a strategy. In our earlier example of
+spread trading of pair stocks, we had to wait a long time before the spread reached a level
+where we can sell it, and then another
+long time before it reached a level where we
+can buy it back again. During these waiting periods, correlations can change
+dramatically due to new information or
+events in the market. The longer your time frame, the more sensitive your
+trade is to these risks. This type of risk is
+generally not an issue for high-frequency traders who focus on ultra-short time frames. Instead, they have to
+worry about covering high trading costs with frequent but usually
+small profits. One of the most
+important things you need to keep in
+mind as you develop strategies is that when you trade a correlation or a spread, you can also change the
+market you're trading in. Prices will change
+immediately and other traders may withdraw liquidity if they
+sense a spread is being traded more heavily
+in one direction. They may also be able to figure out your strategy even
+if your trades are anonymous by noticing changes in price patterns in a
+asymmetries in the order book. Ultimately, if your trades are large enough or
+persistent enough, they will eventually eliminate the profitability of the
+correlation or inefficiency. This is especially true when other terms start trading
+the same strategy.

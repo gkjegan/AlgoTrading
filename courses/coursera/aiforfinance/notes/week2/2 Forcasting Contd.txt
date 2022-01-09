@@ -1,0 +1,47 @@
+In this section, we will look at what
+terms are used in forecasting and what they mean. Here is a quick scenario where we will
+be predicting customer lifetime value with the machine learning model. Let's predict the lifetime value of
+an e-commerce customer using regression. Our goal is to better target high-value
+customers to our e-commerce site throughout the customer lifecycle with
+special promotions and incentives. After exploring the data, we can provide
+a number of useful fields to the model, like the number of different days
+a visitor has been to our website. How many lifetime page views,
+how many total visits, what is the average time on site,
+the total revenue brought in, and the count of e-commerce
+transactions on our site. Now, all that is shown here is basic
+analytics to get a sense of the data, but you could feed this historical lifetime
+value data and use that to predict and power which customers are high-value
+customers to help you focus and target them for promotions and incentives. But before we get too deep
+building models in BigQuery, we first need to define our data terms
+in the language that data scientists and other machine learning professionals use. Taking the e-commerce example
+we had in the previous lesson, a record or a row is called an instance or
+an observation. In the screenshot you see here,
+we have eight instances. A label is the correct answer and will be
+what you are looking to train the model on with your existing data and
+predicting with your model on future data. Here the label is Lifetime Revenue, which
+is a number we will be trying to predict. Labels could also be things like binary
+values like high value customer or not as shown here. Knowing what you're trying to
+predict a class, a number, etc will greatly influence the type
+of model you will use later. Those columns are called features. We have a whole module dedicated to
+creating machine learning data sets in BigQuery which touches on the critical
+topic of feature engineering, which is exploring, cleaning, and pre-processing your data before you input
+it into your machine learning model. This is often the hardest
+part of any ML project and why it's great you already enjoy
+working with data as analysts. Now, say some new data comes in
+that you don't have a label for, we now have a data set of labeled examples
+and a data set with some unknowns. Well, this is the fun part,
+we can draw inference or predict those values with a model. Again, a machine learning model will build
+a recipe for determining those output values in this case classifying
+whether that customer is high value or not based on your labeled training data,
+which is the blue box shown here. Next up, you'll learn how to code
+these models yourself with just SQL. Your model will learn the way to give each
+feature as you can see on the screen. Some features such as distinct
+days visited have more weight than average session quality. After the model is trained you can see
+the relative importance of each field. A label is the correct answer and will be
+what you are looking to train the model on with your existing data and
+predict with your model and future data. Here the label is Lifetime Revenue, which
+is a number we will be trying to predict. Now, let's say you have to predict future
+values of lifetime value for a customer. We now will use past values of LTV for
+that customer to predict future value. Now say some new data comes in
+that you don't have a label for, we now have a data set of labeled
+examples and a data set with unknowns.
